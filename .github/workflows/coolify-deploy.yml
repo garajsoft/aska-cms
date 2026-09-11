@@ -1,0 +1,28 @@
+name: Trigger Coolify
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: aska-coolify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  trigger-coolify:
+    name: Trigger Coolify
+    runs-on: ubuntu-latest
+    env:
+      COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}
+    steps:
+      - name: Trigger deploy webhook
+        if: env.COOLIFY_DEPLOY_WEBHOOK != ''
+        run: |
+          curl --fail --silent --show-error --request POST "$COOLIFY_DEPLOY_WEBHOOK"
+
+      - name: Skip when deploy webhook is not configured
+        if: env.COOLIFY_DEPLOY_WEBHOOK == ''
+        run: |
+          echo "COOLIFY_DEPLOY_WEBHOOK secret is not configured; Coolify native Git webhook remains the deploy trigger."
