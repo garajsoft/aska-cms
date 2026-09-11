@@ -52,6 +52,7 @@ export default buildConfig({
         isDocumentOwner: isSignedIn,
       },
       customers: { slug: Users.slug },
+      products: true,
       currencies: {
         supportedCurrencies: [USD, EUR, GBP],
         defaultCurrency: "USD",
