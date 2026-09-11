@@ -9,9 +9,22 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@payloadcms/db-postgres": "^3.89.0",
+    "@payloadcms/next": "^3.89.0",
+    "@payloadcms/plugin-ecommerce": "^3.89.0",
+    "@payloadcms/plugin-stripe": "^3.89.0",
+    "@payloadcms/richtext-lexical": "^3.89.0",
+    "grapesjs": "^0.23.6",
+    "grapesjs-blocks-basic": "^1.0.2",
+    "grapesjs-plugin-forms": "^2.0.6",
+    "grapesjs-preset-webpage": "^1.0.3",
+    "graphql": "^16.14.2",
     "next": "16.3.4",
+    "payload": "^3.89.0",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "sharp": "^0.35.4",
+    "stripe": "^22.6.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
