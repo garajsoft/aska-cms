@@ -52,6 +52,34 @@ export default buildConfig({
   onInit: async (payload) => {
     if (process.env.NODE_ENV === "production") {
       try {
+        // One-time cleanup: drop legacy tables/enums from the old dynamic
+        // post-types layer so drizzle push doesn't hit an interactive rename
+        // prompt that would hang the container.
+        // ponytail: remove this block once every environment has booted once.
+        const drizzle = (
+          payload.db as { drizzle?: { execute: (q: unknown) => Promise<unknown> } }
+        ).drizzle;
+        if (drizzle) {
+          const { sql } = await import("drizzle-orm");
+          for (const stmt of [
+            'DROP TABLE IF EXISTS "posts_rels" CASCADE',
+            'DROP TABLE IF EXISTS "_posts_v_rels" CASCADE',
+            'DROP TABLE IF EXISTS "_posts_v" CASCADE',
+            'DROP TABLE IF EXISTS "posts" CASCADE',
+            'DROP TABLE IF EXISTS "post_types" CASCADE',
+            'DROP TABLE IF EXISTS "custom_fields" CASCADE',
+            'DROP TYPE IF EXISTS "enum_posts_status"',
+            'DROP TYPE IF EXISTS "enum__posts_v_version_status"',
+            'DROP TYPE IF EXISTS "enum_custom_fields_type"',
+          ]) {
+            try {
+              await drizzle.execute(sql.raw(stmt));
+            } catch (err) {
+              payload.logger.warn({ err, stmt }, "Legacy cleanup drop failed");
+            }
+          }
+        }
+
         const { pushDevSchema } = await import("@payloadcms/drizzle");
         // @ts-expect-error payload.db is the drizzle adapter; type not re-exported
         await pushDevSchema(payload.db);
