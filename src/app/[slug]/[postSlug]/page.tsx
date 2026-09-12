@@ -5,14 +5,14 @@ import { readTemplateForPostType } from "@/lib/templates/repo";
 import { renderTemplate } from "@/lib/templates/render";
 
 interface Props {
-  params: Promise<{ postType: string; slug: string }>;
+  params: Promise<{ slug: string; postSlug: string }>;
 }
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { postType, slug } = await params;
-  const post = await readPostByPath(postType, slug, { publishedOnly: true });
+  const { slug: postType, postSlug } = await params;
+  const post = await readPostByPath(postType, postSlug, { publishedOnly: true });
   if (!post) return { title: "Not found" };
   const description = post.metaDescription || undefined;
   const images = post.shareImageUrl ? [post.shareImageUrl] : undefined;
@@ -30,8 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-  const { postType, slug } = await params;
-  const post = await readPostByPath(postType, slug, { publishedOnly: true });
+  const { slug: postType, postSlug } = await params;
+  const post = await readPostByPath(postType, postSlug, { publishedOnly: true });
   if (!post || post.postTypeId == null) notFound();
 
   const template = await readTemplateForPostType(post.postTypeId);
