@@ -39,16 +39,8 @@ export const Blog: CollectionConfig = {
   access: { read: () => true },
   versions: { drafts: { autosave: false, schedulePublish: false } },
   fields: [
+    // Main column (large, on the right in Payload's split view).
     { name: "title", type: "text", required: true },
-    {
-      name: "slug",
-      type: "text",
-      required: true,
-      unique: true,
-      index: true,
-      admin: { description: "URL segment: /blog/<slug>." },
-    },
-    { name: "excerpt", type: "textarea", maxLength: 320 },
     {
       name: "content",
       type: "richText",
@@ -81,7 +73,7 @@ export const Blog: CollectionConfig = {
                     label: "Width",
                     admin: {
                       description:
-                        "CSS width — e.g. 100%, 400px, 50vw. Leave empty for full width. (Drag-to-resize planned.)",
+                        "CSS width — e.g. 100%, 400px, 50vw. (Drag-to-resize planned.)",
                     },
                   },
                   { name: "alt", type: "text", label: "Alt text" },
@@ -95,17 +87,49 @@ export const Blog: CollectionConfig = {
         ],
       }),
     },
-    { name: "coverImage", type: "upload", relationTo: "media" },
-    { name: "author", type: "relationship", relationTo: "users" },
-    { name: "publishedAt", type: "date" },
+    // Sidebar column (all settings / metadata / SEO on the left of the editor).
     {
-      type: "collapsible",
-      label: "SEO & Social",
-      admin: { initCollapsed: true },
-      fields: [
-        { name: "metaDescription", type: "textarea", maxLength: 320 },
-        { name: "shareImage", type: "upload", relationTo: "media" },
-      ],
+      name: "slug",
+      type: "text",
+      required: true,
+      unique: true,
+      index: true,
+      admin: { position: "sidebar", description: "URL segment: /blog/<slug>." },
+    },
+    {
+      name: "excerpt",
+      type: "textarea",
+      maxLength: 320,
+      admin: { position: "sidebar" },
+    },
+    {
+      name: "coverImage",
+      type: "upload",
+      relationTo: "media",
+      admin: { position: "sidebar" },
+    },
+    {
+      name: "author",
+      type: "relationship",
+      relationTo: "users",
+      admin: { position: "sidebar" },
+    },
+    {
+      name: "publishedAt",
+      type: "date",
+      admin: { position: "sidebar" },
+    },
+    {
+      name: "metaDescription",
+      type: "textarea",
+      maxLength: 320,
+      admin: { position: "sidebar", description: "SEO meta description." },
+    },
+    {
+      name: "shareImage",
+      type: "upload",
+      relationTo: "media",
+      admin: { position: "sidebar", description: "Social share image." },
     },
   ],
 };
