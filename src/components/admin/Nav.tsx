@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AskaMark } from "./AskaMark";
 
 interface Entry {
   href: string;
@@ -71,8 +72,7 @@ export const AskaNav = () => {
   return (
     <nav className="aska-nav">
       <div className="aska-nav__brand">
-        <span className="aska-nav__brand-mark">åska</span>
-        <span className="aska-nav__brand-sub">cms</span>
+        <AskaMark height={26} />
       </div>
 
       <ul className="aska-nav__list">
