@@ -1,24 +1,6 @@
 import type { CollectionConfig } from "payload";
 import {
   lexicalEditor,
-  BoldFeature,
-  ItalicFeature,
-  UnderlineFeature,
-  StrikethroughFeature,
-  SubscriptFeature,
-  SuperscriptFeature,
-  InlineCodeFeature,
-  ParagraphFeature,
-  HeadingFeature,
-  AlignFeature,
-  IndentFeature,
-  UnorderedListFeature,
-  OrderedListFeature,
-  ChecklistFeature,
-  LinkFeature,
-  BlockquoteFeature,
-  HorizontalRuleFeature,
-  InlineToolbarFeature,
   FixedToolbarFeature,
   UploadFeature,
 } from "@payloadcms/richtext-lexical";
@@ -45,24 +27,9 @@ export const Blog: CollectionConfig = {
       name: "content",
       type: "richText",
       editor: lexicalEditor({
-        features: () => [
-          ParagraphFeature(),
-          HeadingFeature({ enabledHeadingSizes: ["h1", "h2", "h3", "h4"] }),
-          BoldFeature(),
-          ItalicFeature(),
-          UnderlineFeature(),
-          StrikethroughFeature(),
-          SubscriptFeature(),
-          SuperscriptFeature(),
-          InlineCodeFeature(),
-          AlignFeature(),
-          IndentFeature(),
-          UnorderedListFeature(),
-          OrderedListFeature(),
-          ChecklistFeature(),
-          BlockquoteFeature(),
-          HorizontalRuleFeature(),
-          LinkFeature({ enabledCollections: ["pages", "blog", "products"] }),
+        features: ({ defaultFeatures }) => [
+          ...defaultFeatures,
+          FixedToolbarFeature(),
           UploadFeature({
             collections: {
               media: {
@@ -82,8 +49,6 @@ export const Blog: CollectionConfig = {
               },
             },
           }),
-          FixedToolbarFeature(),
-          InlineToolbarFeature(),
         ],
       }),
     },
