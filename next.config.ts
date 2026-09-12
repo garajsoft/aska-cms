@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
   // so a full disk on the deploy host doesn't kill the whole build on
   // the .tsbuildinfo write.
   typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
 };
 
 export default withPayload(nextConfig);

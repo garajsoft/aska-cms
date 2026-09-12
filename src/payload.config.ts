@@ -52,31 +52,21 @@ export default buildConfig({
   onInit: async (payload) => {
     if (process.env.NODE_ENV === "production") {
       try {
-        // One-time cleanup: drop legacy tables/enums from the old dynamic
-        // post-types layer so drizzle push doesn't hit an interactive rename
-        // prompt that would hang the container.
-        // ponytail: remove this block once every environment has booted once.
-        const drizzle = (
-          payload.db as { drizzle?: { execute: (q: unknown) => Promise<unknown> } }
-        ).drizzle;
-        if (drizzle) {
-          const { sql } = await import("drizzle-orm");
-          for (const stmt of [
-            'DROP TABLE IF EXISTS "posts_rels" CASCADE',
-            'DROP TABLE IF EXISTS "_posts_v_rels" CASCADE',
-            'DROP TABLE IF EXISTS "_posts_v" CASCADE',
-            'DROP TABLE IF EXISTS "posts" CASCADE',
-            'DROP TABLE IF EXISTS "post_types" CASCADE',
-            'DROP TABLE IF EXISTS "custom_fields" CASCADE',
-            'DROP TYPE IF EXISTS "enum_posts_status"',
-            'DROP TYPE IF EXISTS "enum__posts_v_version_status"',
-            'DROP TYPE IF EXISTS "enum_custom_fields_type"',
-          ]) {
-            try {
-              await drizzle.execute(sql.raw(stmt));
-            } catch (err) {
-              payload.logger.warn({ err, stmt }, "Legacy cleanup drop failed");
-            }
+        // One-time cleanup: reset the public schema so drizzle push doesn't
+        // hit interactive rename prompts (no TTY in the container = boot
+        // hangs forever). Guarded by RESET_SCHEMA_ON_BOOT=1 env — set it,
+        // deploy, watch it boot clean, then unset it.
+        // ponytail: destroys ALL data; only run on empty/dev environments.
+        if (process.env.RESET_SCHEMA_ON_BOOT === "1") {
+          const drizzle = (
+            payload.db as { drizzle?: { execute: (q: unknown) => Promise<unknown> } }
+          ).drizzle;
+          if (drizzle) {
+            const { sql } = await import("drizzle-orm");
+            payload.logger.warn("RESET_SCHEMA_ON_BOOT=1 — dropping public schema");
+            await drizzle.execute(
+              sql.raw("DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;")
+            );
           }
         }
 
