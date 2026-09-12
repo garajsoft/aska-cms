@@ -18,6 +18,31 @@ export const Pages: CollectionConfig = {
       admin: { description: "URL path, e.g. 'home' or 'about'." },
     },
     {
+      type: "collapsible",
+      label: "SEO & Social",
+      admin: { initCollapsed: true },
+      fields: [
+        {
+          name: "metaDescription",
+          type: "textarea",
+          maxLength: 320,
+          admin: {
+            description:
+              "Shown in Google results and when the page is shared. ~155 chars is ideal.",
+          },
+        },
+        {
+          name: "shareImage",
+          type: "upload",
+          relationTo: "media",
+          admin: {
+            description:
+              "Used as the OG/Twitter image when this page is shared. Recommended 1200×630.",
+          },
+        },
+      ],
+    },
+    {
       name: "html",
       type: "code",
       admin: { language: "html", description: "HTML from GrapesJS." },

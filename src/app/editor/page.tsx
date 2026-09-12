@@ -23,6 +23,8 @@ export default async function EditorPage({ searchParams }: Props) {
     slug,
     html: "",
     css: "",
+    metaDescription: "",
+    shareImageUrl: null,
   };
   return <GrapesEditor slug={slug} initial={initial} />;
 }

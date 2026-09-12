@@ -8,21 +8,31 @@ export interface PageContent {
   slug: string;
   html: string;
   css: string;
+  metaDescription: string;
+  shareImageUrl: string | null;
 }
 
 async function payload() {
   return getPayload({ config });
 }
 
+function shareImageUrl(shareImage: unknown): string | null {
+  if (!shareImage || typeof shareImage !== "object") return null;
+  const url = (shareImage as { url?: string }).url;
+  return url ?? null;
+}
+
 export async function listPages(): Promise<PageContent[]> {
   const p = await payload();
-  const r = await p.find({ collection: "pages", limit: 200, depth: 0, sort: "slug" });
+  const r = await p.find({ collection: "pages", limit: 200, depth: 1, sort: "slug" });
   return r.docs.map((d) => ({
     id: d.id,
     title: d.title,
     slug: d.slug,
     html: d.html ?? "",
     css: d.css ?? "",
+    metaDescription: d.metaDescription ?? "",
+    shareImageUrl: shareImageUrl(d.shareImage),
   }));
 }
 
@@ -32,7 +42,7 @@ export async function readPage(slug: string): Promise<PageContent | null> {
     collection: "pages",
     where: { slug: { equals: slug } },
     limit: 1,
-    depth: 0,
+    depth: 1,
   });
   const doc = r.docs[0];
   if (!doc) return null;
@@ -42,6 +52,8 @@ export async function readPage(slug: string): Promise<PageContent | null> {
     slug: doc.slug,
     html: doc.html ?? "",
     css: doc.css ?? "",
+    metaDescription: doc.metaDescription ?? "",
+    shareImageUrl: shareImageUrl(doc.shareImage),
   };
 }
 
@@ -56,7 +68,7 @@ export async function upsertPage(input: {
     collection: "pages",
     where: { slug: { equals: input.slug } },
     limit: 1,
-    depth: 0,
+    depth: 1,
   });
   const current = existing.docs[0];
   if (current) {
@@ -69,7 +81,15 @@ export async function upsertPage(input: {
         css: input.css ?? current.css ?? "",
       },
     });
-    return { id: u.id, title: u.title, slug: u.slug, html: u.html ?? "", css: u.css ?? "" };
+    return {
+      id: u.id,
+      title: u.title,
+      slug: u.slug,
+      html: u.html ?? "",
+      css: u.css ?? "",
+      metaDescription: u.metaDescription ?? "",
+      shareImageUrl: shareImageUrl(u.shareImage),
+    };
   }
   const c = await p.create({
     collection: "pages",
@@ -80,5 +100,13 @@ export async function upsertPage(input: {
       css: input.css ?? "",
     },
   });
-  return { id: c.id, title: c.title, slug: c.slug, html: c.html ?? "", css: c.css ?? "" };
+  return {
+    id: c.id,
+    title: c.title,
+    slug: c.slug,
+    html: c.html ?? "",
+    css: c.css ?? "",
+    metaDescription: c.metaDescription ?? "",
+    shareImageUrl: shareImageUrl(c.shareImage),
+  };
 }
