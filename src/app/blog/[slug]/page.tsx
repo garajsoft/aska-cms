@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPayload } from "payload";
+import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html";
 import config from "@/payload.config";
 import { readTemplateForCollection } from "@/lib/templates/repo";
 import { renderTemplate } from "@/lib/templates/render";
@@ -44,6 +45,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+function isLexicalDoc(v: unknown): v is { root: { type: "root" } } {
+  return (
+    !!v &&
+    typeof v === "object" &&
+    typeof (v as { root?: { type?: string } }).root === "object" &&
+    (v as { root: { type?: string } }).root.type === "root"
+  );
+}
+
+/** Walk one level; convert any lexical JSON field into an HTML string. */
+function flattenLexical(doc: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...doc };
+  for (const [k, v] of Object.entries(out)) {
+    if (isLexicalDoc(v)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      out[k] = convertLexicalToHTML({ data: v as any });
+    }
+  }
+  return out;
+}
+
 export default async function Page({ params }: Props) {
   const { slug } = await params;
   const doc = await fetchPublished(slug);
@@ -59,7 +81,7 @@ export default async function Page({ params }: Props) {
       </div>
     );
   }
-  const rendered = renderTemplate(template.html, doc as Record<string, unknown>);
+  const rendered = renderTemplate(template.html, flattenLexical(doc as Record<string, unknown>));
   return (
     <>
       {template.css && <style dangerouslySetInnerHTML={{ __html: template.css }} />}
