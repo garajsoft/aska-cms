@@ -13,25 +13,9 @@ export const Logo = () => (
   </div>
 );
 
-// The "Icon" slot sits at the start of Payload's breadcrumb. Show a
-// text "Dashboard" link instead of a cropped mark. Wide + nowrap so
-// the parent slot doesn't clip it.
-export const Icon = () => (
-  <a
-    href="/admin"
-    style={{
-      display: "inline-block",
-      color: "inherit",
-      textDecoration: "none",
-      fontSize: 13,
-      fontWeight: 500,
-      padding: "0 8px",
-      whiteSpace: "nowrap",
-      minWidth: 90,
-    }}
-  >
-    Dashboard
-  </a>
-);
+// Payload's breadcrumb already has "Dashboard" as the first crumb
+// on every view — this slot is redundant. Render nothing here; CSS
+// hides the leading separator so we don't get an orphan slash.
+export const Icon = () => null;
 
 export default Logo;

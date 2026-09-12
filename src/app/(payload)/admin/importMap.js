@@ -10,6 +10,11 @@ import {
   EditTemplateVisuallyLink as EditTemplateVisuallyLink_0,
 } from "@/components/admin/EditVisuallyLink";
 import { AskaDashboard as AskaDashboard_0 } from "@/components/admin/dashboard/AskaDashboard";
+import {
+  RscEntryLexicalCell as RscEntryLexicalCell_1,
+  RscEntryLexicalField as RscEntryLexicalField_1,
+  LexicalDiffComponent as LexicalDiffComponent_1,
+} from "@payloadcms/richtext-lexical/rsc";
 
 export const importMap = {
   "@/components/admin/Logo#Logo": Logo_0,
@@ -21,4 +26,7 @@ export const importMap = {
   "@/components/admin/EditVisuallyLink#EditPageVisuallyLink": EditPageVisuallyLink_0,
   "@/components/admin/EditVisuallyLink#EditTemplateVisuallyLink": EditTemplateVisuallyLink_0,
   "@/components/admin/dashboard/AskaDashboard#AskaDashboard": AskaDashboard_0,
+  "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_1,
+  "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_1,
+  "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_1,
 };
