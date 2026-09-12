@@ -25,8 +25,8 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
     meta: {
-      title: "Aska CMS",
-      titleSuffix: " · Aska",
+      title: "åska CMS",
+      titleSuffix: " · åska",
     },
     components: {
       Nav: "@/components/admin/Nav#AskaNav",

@@ -3,7 +3,7 @@ import { GrapesEditor } from "./GrapesEditor";
 import { readPage } from "@/lib/pages/repo";
 import { getCurrentUser } from "@/lib/auth/requireUser";
 
-export const metadata = { title: "Editor — Aska CMS" };
+export const metadata = { title: "Editor — åska CMS" };
 export const dynamic = "force-dynamic";
 
 interface Props {
