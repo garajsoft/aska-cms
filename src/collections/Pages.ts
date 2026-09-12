@@ -7,7 +7,10 @@ export const Pages: CollectionConfig = {
     defaultColumns: ["title", "metaDescription", "_status", "updatedAt"],
     components: {
       edit: {
-        beforeDocumentControls: ["@/components/admin/ViewLink#ViewPageLink"],
+        beforeDocumentControls: [
+          "@/components/admin/EditVisuallyLink#EditPageVisuallyLink",
+          "@/components/admin/ViewLink#ViewPageLink",
+        ],
       },
     },
   },

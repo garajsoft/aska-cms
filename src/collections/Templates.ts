@@ -8,6 +8,13 @@ export const Templates: CollectionConfig = {
     defaultColumns: ["name", "postType", "updatedAt"],
     description:
       "Layouts for a post type. Edit visually in GrapesJS; drop 'Field' blocks referencing custom fields as {{fields.KEY}}, or built-ins like {{title}} and {{slug}}.",
+    components: {
+      edit: {
+        beforeDocumentControls: [
+          "@/components/admin/EditVisuallyLink#EditTemplateVisuallyLink",
+        ],
+      },
+    },
   },
   access: { read: () => true },
   fields: [
