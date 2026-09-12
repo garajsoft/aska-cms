@@ -1,0 +1,114 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+interface Entry {
+  href: string;
+  label: string;
+  countSlug?: string; // Payload collection slug to fetch totalDocs from
+  isGlobal?: boolean;
+}
+
+// Flat sidebar order. Add more entries here as collections are added.
+const ENTRIES: Entry[] = [
+  { href: "/admin/collections/pages", label: "Pages", countSlug: "pages" },
+  { href: "/admin/collections/posts", label: "Posts", countSlug: "posts" },
+  { href: "/admin/collections/products", label: "Products", countSlug: "products" },
+  { href: "/admin/collections/orders", label: "Orders", countSlug: "orders" },
+  { href: "/admin/collections/users", label: "Users", countSlug: "users" },
+  { href: "/admin/collections/media", label: "Media", countSlug: "media" },
+  { href: "/admin/collections/templates", label: "Templates", countSlug: "templates" },
+  { href: "/admin/collections/post-types", label: "Post Types", countSlug: "post-types" },
+  { href: "/admin/collections/custom-fields", label: "Custom Fields", countSlug: "custom-fields" },
+  { href: "/admin/globals/settings", label: "Settings", isGlobal: true },
+];
+
+interface Me {
+  user?: { email?: string } | null;
+}
+
+export const AskaNav = () => {
+  const pathname = usePathname() ?? "";
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [me, setMe] = useState<Me["user"]>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // Counts in parallel; ignore any that 404 (collection missing).
+      const results = await Promise.all(
+        ENTRIES.filter((e) => e.countSlug).map(async (e) => {
+          try {
+            const r = await fetch(`/api/${e.countSlug}?limit=0&depth=0`, {
+              credentials: "include",
+            });
+            if (!r.ok) return [e.countSlug!, 0] as const;
+            const j = (await r.json()) as { totalDocs?: number };
+            return [e.countSlug!, j.totalDocs ?? 0] as const;
+          } catch {
+            return [e.countSlug!, 0] as const;
+          }
+        })
+      );
+      if (cancelled) return;
+      const map: Record<string, number> = {};
+      for (const [slug, n] of results) map[slug] = n;
+      setCounts(map);
+
+      try {
+        const r = await fetch("/api/users/me", { credentials: "include" });
+        if (r.ok) {
+          const j = (await r.json()) as Me;
+          if (!cancelled) setMe(j.user ?? null);
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <nav className="aska-nav">
+      <div className="aska-nav__brand">
+        <span className="aska-nav__brand-mark">åska</span>
+        <span className="aska-nav__brand-sub">cms</span>
+      </div>
+
+      <ul className="aska-nav__list">
+        {ENTRIES.map((e) => {
+          const active = pathname === e.href || pathname.startsWith(`${e.href}/`);
+          const n = e.countSlug ? counts[e.countSlug] : undefined;
+          return (
+            <li key={e.href}>
+              <Link
+                href={e.href}
+                className={`aska-nav__item${active ? " is-active" : ""}`}
+              >
+                <span className="aska-nav__label">{e.label}</span>
+                {typeof n === "number" && n > 0 && (
+                  <span className="aska-nav__count">{n.toLocaleString()}</span>
+                )}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+
+      {me && (
+        <div className="aska-nav__me">
+          <span className="aska-nav__avatar" aria-hidden>
+            {(me.email ?? "?").slice(0, 1).toUpperCase()}
+          </span>
+          <span className="aska-nav__me-text">{me.email}</span>
+        </div>
+      )}
+    </nav>
+  );
+};
+
+export default AskaNav;

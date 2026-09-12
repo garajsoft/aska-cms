@@ -31,6 +31,7 @@ export default buildConfig({
       titleSuffix: " · Aska",
     },
     components: {
+      Nav: "@/components/admin/Nav#AskaNav",
       graphics: {
         Logo: "@/components/admin/Logo#Logo",
         Icon: "@/components/admin/Logo#Icon",
@@ -57,6 +58,12 @@ export default buildConfig({
       } catch (err) {
         payload.logger.error({ err }, "Schema push failed");
       }
+    }
+    try {
+      const { seedDefaultPostTypes } = await import("./lib/seed/postTypes");
+      await seedDefaultPostTypes(payload);
+    } catch (err) {
+      payload.logger.error({ err }, "Post-type seed failed");
     }
   },
   plugins: [

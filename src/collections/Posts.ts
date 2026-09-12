@@ -8,6 +8,11 @@ export const Posts: CollectionConfig = {
     description:
       "Entries of a given post type. Editable as a form (no visual editor) — the template controls the layout.",
     listSearchableFields: ["title", "slug"],
+    components: {
+      edit: {
+        beforeDocumentControls: ["@/components/admin/ViewLink#ViewPostLink"],
+      },
+    },
   },
   access: { read: () => true },
   versions: {

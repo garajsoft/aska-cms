@@ -5,6 +5,11 @@ export const Pages: CollectionConfig = {
   admin: {
     useAsTitle: "title",
     defaultColumns: ["title", "metaDescription", "_status", "updatedAt"],
+    components: {
+      edit: {
+        beforeDocumentControls: ["@/components/admin/ViewLink#ViewPageLink"],
+      },
+    },
   },
   versions: {
     drafts: {
