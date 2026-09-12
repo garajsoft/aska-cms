@@ -1,5 +1,5 @@
 import "server-only";
-import { getPayload } from "payload";
+import { getPayload, type Where } from "payload";
 import config from "@/payload.config";
 
 export interface PageContent {
@@ -36,13 +36,20 @@ export async function listPages(): Promise<PageContent[]> {
   }));
 }
 
-export async function readPage(slug: string): Promise<PageContent | null> {
+export async function readPage(
+  slug: string,
+  opts: { publishedOnly?: boolean } = {}
+): Promise<PageContent | null> {
   const p = await payload();
+  const where: Where = opts.publishedOnly
+    ? { slug: { equals: slug }, _status: { equals: "published" } }
+    : { slug: { equals: slug } };
   const r = await p.find({
     collection: "pages",
-    where: { slug: { equals: slug } },
+    where,
     limit: 1,
     depth: 1,
+    draft: !opts.publishedOnly,
   });
   const doc = r.docs[0];
   if (!doc) return null;

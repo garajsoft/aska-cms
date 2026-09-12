@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const page = await readPage(slug);
+  const page = await readPage(slug, { publishedOnly: true });
   if (!page) return { title: "Not found" };
 
   const description = page.metaDescription || undefined;
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const { slug } = await params;
-  const page = await readPage(slug);
+  const page = await readPage(slug, { publishedOnly: true });
   if (!page) notFound();
   return (
     <>

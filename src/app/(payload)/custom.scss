@@ -1,1 +1,31 @@
-/* Payload admin overrides — add customizations here. */
+/* Aska admin theme — dark green accent on Payload's default layout. */
+:root {
+  --theme-success-500: #1f3a2e;
+  --theme-success-600: #16281f;
+  --theme-success-400: #2f5c48;
+  --theme-elevation-1000: #101a15;
+}
+
+html[data-theme="dark"] {
+  --theme-success-500: #6cb28c;
+  --theme-success-600: #85c6a4;
+  --theme-success-400: #5a9c78;
+}
+
+/* Buttons default to green primary. */
+button.btn--style-primary,
+a.btn--style-primary {
+  background: var(--theme-success-500);
+  border-color: var(--theme-success-500);
+  &:hover,
+  &:focus {
+    background: var(--theme-success-600);
+    border-color: var(--theme-success-600);
+  }
+}
+
+/* Status pill styling on list rows. */
+.pill--style-success {
+  background: color-mix(in srgb, var(--theme-success-500) 12%, transparent);
+  color: var(--theme-success-500);
+}

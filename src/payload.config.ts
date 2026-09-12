@@ -10,6 +10,7 @@ import sharp from "sharp";
 import { Pages } from "./collections/Pages";
 import { Users } from "./collections/Users";
 import { Media } from "./collections/Media";
+import { Settings } from "./globals/Settings";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -21,8 +22,19 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
+    meta: {
+      title: "Aska CMS",
+      titleSuffix: " · Aska",
+    },
+    components: {
+      graphics: {
+        Logo: "@/components/admin/Logo#Logo",
+        Icon: "@/components/admin/Logo#Icon",
+      },
+    },
   },
   collections: [Pages, Users, Media],
+  globals: [Settings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },

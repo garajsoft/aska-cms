@@ -4,7 +4,13 @@ export const Pages: CollectionConfig = {
   slug: "pages",
   admin: {
     useAsTitle: "title",
-    defaultColumns: ["title", "slug", "updatedAt"],
+    defaultColumns: ["title", "metaDescription", "_status", "updatedAt"],
+  },
+  versions: {
+    drafts: {
+      autosave: false,
+      schedulePublish: false,
+    },
   },
   access: { read: () => true },
   fields: [

@@ -1,9 +1,23 @@
 import Link from "next/link";
-import { listPages } from "@/lib/pages/repo";
+import { readPage, listPages } from "@/lib/pages/repo";
+import { getHomepageSlug } from "@/lib/settings/repo";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const slug = await getHomepageSlug();
+  if (slug) {
+    const page = await readPage(slug, { publishedOnly: true });
+    if (page) {
+      return (
+        <>
+          {page.css && <style dangerouslySetInnerHTML={{ __html: page.css }} />}
+          <div dangerouslySetInnerHTML={{ __html: page.html }} />
+        </>
+      );
+    }
+  }
+
   const pages = await listPages();
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col gap-8 p-8 font-sans">
@@ -11,7 +25,7 @@ export default async function Home() {
         <span className="text-xs uppercase tracking-widest text-zinc-500">Aska CMS</span>
         <h1 className="text-3xl font-semibold tracking-tight">Pages</h1>
         <p className="text-sm text-zinc-600">
-          Payload CMS + GrapesJS visual editor + Stripe-backed ecommerce.
+          No homepage set in Settings. Pick one under <code>/admin/globals/settings</code>.
         </p>
       </header>
       <ul className="flex flex-col divide-y divide-black/5 rounded-lg border border-black/10">
@@ -43,14 +57,8 @@ export default async function Home() {
         ))}
       </ul>
       <div className="flex gap-3">
-        <Link
-          href="/editor?slug=home"
-          className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-        >
-          Open editor
-        </Link>
         <a href="/admin" className="rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-black/5">
-          Payload admin
+          Open admin
         </a>
       </div>
     </div>
