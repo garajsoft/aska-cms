@@ -17,7 +17,7 @@ export default async function EditorPage({ searchParams }: Props) {
     const back = `/editor?slug=${encodeURIComponent(slug)}`;
     redirect(`/admin/login?redirect=${encodeURIComponent(back)}`);
   }
-  const initial = (await readPage(slug)) ?? {
+  const page = (await readPage(slug)) ?? {
     id: 0,
     title: slug,
     slug,
@@ -26,5 +26,10 @@ export default async function EditorPage({ searchParams }: Props) {
     metaDescription: "",
     shareImageUrl: null,
   };
-  return <GrapesEditor slug={slug} initial={initial} />;
+  return (
+    <GrapesEditor
+      target={{ mode: "page", slug, title: page.title }}
+      initial={{ html: page.html, css: page.css }}
+    />
+  );
 }

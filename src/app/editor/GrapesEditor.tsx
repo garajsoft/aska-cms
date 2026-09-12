@@ -4,12 +4,38 @@ import { useEffect, useRef, useState } from "react";
 import type { Editor } from "grapesjs";
 import "grapesjs/dist/css/grapes.min.css";
 
+export type EditorTarget =
+  | { mode: "page"; slug: string; title: string }
+  | { mode: "template"; id: string | number; name: string; postTypeSlug: string | null };
+
 interface Props {
-  slug: string;
-  initial: { title: string; slug: string; html: string; css: string };
+  target: EditorTarget;
+  initial: { html: string; css: string };
+  fieldKeys?: string[];
 }
 
-export function GrapesEditor({ slug, initial }: Props) {
+function buildSaveUrl(t: EditorTarget) {
+  return t.mode === "page"
+    ? `/api/editor/pages/${encodeURIComponent(t.slug)}`
+    : `/api/editor/templates/${encodeURIComponent(String(t.id))}`;
+}
+
+function buildSaveBody(t: EditorTarget, html: string, css: string) {
+  return t.mode === "page"
+    ? { title: t.title, html, css }
+    : { html, css };
+}
+
+function viewHref(t: EditorTarget): string | null {
+  if (t.mode === "page") return `/${t.slug}`;
+  return null;
+}
+
+function label(t: EditorTarget): string {
+  return t.mode === "page" ? `/${t.slug}` : `${t.name} (template)`;
+}
+
+export function GrapesEditor({ target, initial, fieldKeys = [] }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<Editor | null>(null);
   const [saving, setSaving] = useState(false);
@@ -19,15 +45,20 @@ export function GrapesEditor({ slug, initial }: Props) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [{ default: grapesjs }, { default: presetWebpage }, { default: blocksBasic }, { default: forms }] =
-        await Promise.all([
-          import("grapesjs"),
-          import("grapesjs-preset-webpage"),
-          import("grapesjs-blocks-basic"),
-          import("grapesjs-plugin-forms"),
-        ]);
+      const [
+        { default: grapesjs },
+        { default: presetWebpage },
+        { default: blocksBasic },
+        { default: forms },
+      ] = await Promise.all([
+        import("grapesjs"),
+        import("grapesjs-preset-webpage"),
+        import("grapesjs-blocks-basic"),
+        import("grapesjs-plugin-forms"),
+      ]);
       if (cancelled || !containerRef.current) return;
-      editorRef.current = grapesjs.init({
+
+      const editor = grapesjs.init({
         container: containerRef.current,
         height: "calc(100vh - 44px)",
         width: "auto",
@@ -35,29 +66,53 @@ export function GrapesEditor({ slug, initial }: Props) {
         fromElement: false,
         components:
           initial.html ||
-          `<section style="padding:64px 24px;text-align:center;font-family:sans-serif"><h1>${initial.title}</h1></section>`,
+          `<section style="padding:64px 24px;text-align:center;font-family:sans-serif"><h1>${
+            target.mode === "page" ? target.title : target.name
+          }</h1></section>`,
         style: initial.css || "",
         plugins: [presetWebpage, blocksBasic, forms],
         pluginsOpts: { "grapesjs-blocks-basic": { flexGrid: true } },
       });
+
+      // Add built-in placeholders (title, slug) always available.
+      const bm = editor.BlockManager;
+      bm.add("aska-field-title", {
+        label: "Post title",
+        category: "Fields",
+        content: '<h1>{{title}}</h1>',
+      });
+      bm.add("aska-field-slug", {
+        label: "Post slug",
+        category: "Fields",
+        content: "<code>{{slug}}</code>",
+      });
+      for (const key of fieldKeys) {
+        bm.add(`aska-field-${key}`, {
+          label: key,
+          category: "Custom Fields",
+          content: `<span data-aska-field="${key}">{{fields.${key}}}</span>`,
+        });
+      }
+
+      editorRef.current = editor;
     })();
     return () => {
       cancelled = true;
       editorRef.current?.destroy();
     };
-  }, [initial.html, initial.css, initial.title]);
+  }, [initial.html, initial.css, target, fieldKeys]);
 
   async function handleSave() {
     if (!editorRef.current) return;
     setSaving(true);
     setError(null);
     try {
-      const html = editorRef.current.getHtml();
-      const css = editorRef.current.getCss();
-      const res = await fetch(`/api/editor/pages/${encodeURIComponent(slug)}`, {
+      const html = editorRef.current.getHtml() ?? "";
+      const css = editorRef.current.getCss() ?? "";
+      const res = await fetch(buildSaveUrl(target), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: initial.title, html, css }),
+        body: JSON.stringify(buildSaveBody(target, html, css)),
       });
       if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
       setLastSaved(new Date());
@@ -68,27 +123,37 @@ export function GrapesEditor({ slug, initial }: Props) {
     }
   }
 
+  const view = viewHref(target);
+
   return (
     <div className="flex h-screen w-screen flex-col bg-white">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-black/10 bg-white px-4 text-sm">
         <div className="flex items-center gap-3">
-          <a href="/" className="text-zinc-500 hover:text-black">←</a>
+          <a href="/admin" className="text-zinc-500 hover:text-black">←</a>
           <span className="font-medium">Editing</span>
-          <code className="rounded bg-zinc-100 px-2 py-0.5 text-xs">/{slug}</code>
-          {error && <span className="text-xs text-red-600" title={error}>Save failed</span>}
+          <code className="rounded bg-zinc-100 px-2 py-0.5 text-xs">{label(target)}</code>
+          {error && (
+            <span className="text-xs text-red-600" title={error}>
+              Save failed
+            </span>
+          )}
           {!error && lastSaved && (
-            <span className="text-xs text-zinc-500">Saved {lastSaved.toLocaleTimeString()}</span>
+            <span className="text-xs text-zinc-500">
+              Saved {lastSaved.toLocaleTimeString()}
+            </span>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <a
-            href={`/${slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full border border-black/10 px-3 py-1 text-xs hover:bg-black/5"
-          >
-            View
-          </a>
+          {view && (
+            <a
+              href={view}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full border border-black/10 px-3 py-1 text-xs hover:bg-black/5"
+            >
+              View
+            </a>
+          )}
           <button
             onClick={handleSave}
             disabled={saving}

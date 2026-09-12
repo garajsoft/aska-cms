@@ -10,6 +10,10 @@ import sharp from "sharp";
 import { Pages } from "./collections/Pages";
 import { Users } from "./collections/Users";
 import { Media } from "./collections/Media";
+import { PostTypes } from "./collections/PostTypes";
+import { CustomFields } from "./collections/CustomFields";
+import { Posts } from "./collections/Posts";
+import { Templates } from "./collections/Templates";
 import { Settings } from "./globals/Settings";
 
 const filename = fileURLToPath(import.meta.url);
@@ -33,7 +37,7 @@ export default buildConfig({
       },
     },
   },
-  collections: [Pages, Users, Media],
+  collections: [Pages, Posts, Templates, PostTypes, CustomFields, Users, Media],
   globals: [Settings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
