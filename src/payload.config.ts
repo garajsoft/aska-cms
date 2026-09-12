@@ -8,11 +8,9 @@ import { stripeAdapter } from "@payloadcms/plugin-ecommerce/payments/stripe";
 import sharp from "sharp";
 
 import { Pages } from "./collections/Pages";
+import { Blog } from "./collections/Blog";
 import { Users } from "./collections/Users";
 import { Media } from "./collections/Media";
-import { PostTypes } from "./collections/PostTypes";
-import { CustomFields } from "./collections/CustomFields";
-import { Posts } from "./collections/Posts";
 import { Templates } from "./collections/Templates";
 import { Settings } from "./globals/Settings";
 
@@ -36,9 +34,12 @@ export default buildConfig({
         Logo: "@/components/admin/Logo#Logo",
         Icon: "@/components/admin/Logo#Icon",
       },
+      beforeDashboard: [
+        "@/components/admin/dashboard/AskaDashboard#AskaDashboard",
+      ],
     },
   },
-  collections: [Pages, Posts, Templates, PostTypes, CustomFields, Users, Media],
+  collections: [Pages, Blog, Templates, Users, Media],
   globals: [Settings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
@@ -58,12 +59,6 @@ export default buildConfig({
       } catch (err) {
         payload.logger.error({ err }, "Schema push failed");
       }
-    }
-    try {
-      const { seedDefaultPostTypes } = await import("./lib/seed/postTypes");
-      await seedDefaultPostTypes(payload);
-    } catch (err) {
-      payload.logger.error({ err }, "Post-type seed failed");
     }
   },
   plugins: [

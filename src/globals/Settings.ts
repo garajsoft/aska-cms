@@ -73,6 +73,33 @@ export const Settings: GlobalConfig = {
           ],
         },
         {
+          label: "Dashboard",
+          fields: [
+            {
+              name: "dashboard",
+              type: "group",
+              fields: [
+                {
+                  name: "widgets",
+                  type: "select",
+                  hasMany: true,
+                  defaultValue: ["site_traffic", "form_submissions", "conversions", "comments"],
+                  options: [
+                    { label: "Site traffic", value: "site_traffic" },
+                    { label: "Form submissions", value: "form_submissions" },
+                    { label: "Conversions", value: "conversions" },
+                    { label: "Comments", value: "comments" },
+                  ],
+                  admin: {
+                    description:
+                      "Widgets to show on /admin. Deselect any to hide them.",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
           label: "Payments",
           description:
             "Connect payment providers. Keys are stored in the database — until we wire dedicated flows, edits here don't automatically override any env-var credentials used by the ecommerce plugin.",

@@ -5,7 +5,7 @@ import config from "@/payload.config";
 export interface Template {
   id: string | number;
   name: string;
-  postTypeId: string | number | null;
+  collectionSlug: string;
   html: string;
   css: string;
 }
@@ -14,44 +14,40 @@ async function payload() {
   return getPayload({ config });
 }
 
-function relId(rel: unknown): string | number | null {
-  if (!rel) return null;
-  if (typeof rel === "object") return (rel as { id?: string | number }).id ?? null;
-  return rel as string | number;
+function mapDoc(doc: {
+  id: string | number;
+  name: string;
+  collection: string;
+  html?: string | null;
+  css?: string | null;
+}): Template {
+  return {
+    id: doc.id,
+    name: doc.name,
+    collectionSlug: doc.collection,
+    html: doc.html ?? "",
+    css: doc.css ?? "",
+  };
 }
 
-export async function readTemplateForPostType(
-  postTypeId: string | number
+export async function readTemplateForCollection(
+  collectionSlug: string
 ): Promise<Template | null> {
   const p = await payload();
   const r = await p.find({
     collection: "templates",
-    where: { postType: { equals: postTypeId } },
+    where: { collection: { equals: collectionSlug } },
     limit: 1,
     depth: 0,
   });
   const doc = r.docs[0];
-  if (!doc) return null;
-  return {
-    id: doc.id,
-    name: doc.name,
-    postTypeId: relId(doc.postType),
-    html: doc.html ?? "",
-    css: doc.css ?? "",
-  };
+  return doc ? mapDoc(doc as never) : null;
 }
 
 export async function readTemplate(id: string | number): Promise<Template | null> {
   const p = await payload();
   const doc = await p.findByID({ collection: "templates", id, depth: 0 }).catch(() => null);
-  if (!doc) return null;
-  return {
-    id: doc.id,
-    name: doc.name,
-    postTypeId: relId(doc.postType),
-    html: doc.html ?? "",
-    css: doc.css ?? "",
-  };
+  return doc ? mapDoc(doc as never) : null;
 }
 
 export async function updateTemplateContent(input: {
@@ -68,11 +64,5 @@ export async function updateTemplateContent(input: {
       css: input.css ?? "",
     },
   });
-  return {
-    id: u.id,
-    name: u.name,
-    postTypeId: relId(u.postType),
-    html: u.html ?? "",
-    css: u.css ?? "",
-  };
+  return mapDoc(u as never);
 }

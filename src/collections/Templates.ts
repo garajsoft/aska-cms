@@ -1,13 +1,22 @@
 import type { CollectionConfig } from "payload";
 
+/**
+ * Slugs of collections that can be rendered through a template. Add new
+ * collection slugs here as they get promoted to "renderable" content.
+ */
+export const RENDERABLE_COLLECTIONS = [
+  { label: "Blog Posts", value: "blog" },
+  { label: "Products", value: "products" },
+] as const;
+
 export const Templates: CollectionConfig = {
   slug: "templates",
   admin: {
     group: "Theme",
     useAsTitle: "name",
-    defaultColumns: ["name", "postType", "updatedAt"],
+    defaultColumns: ["name", "collection", "updatedAt"],
     description:
-      "Layouts for a post type. Edit visually in GrapesJS; drop 'Field' blocks referencing custom fields as {{fields.KEY}}, or built-ins like {{title}} and {{slug}}.",
+      "Layouts for a collection (Blog, Products, …). Edit visually in GrapesJS; use {{title}}, {{slug}}, {{fieldName}} placeholders — or {{{fieldName}}} to render raw HTML.",
     components: {
       edit: {
         beforeDocumentControls: [
@@ -20,22 +29,18 @@ export const Templates: CollectionConfig = {
   fields: [
     { name: "name", type: "text", required: true },
     {
-      name: "postType",
-      type: "relationship",
-      relationTo: "post-types",
+      name: "collection",
+      type: "select",
       required: true,
       unique: true,
-      admin: { description: "One template per post type." },
+      options: RENDERABLE_COLLECTIONS as unknown as { label: string; value: string }[],
+      admin: { description: "One template per collection." },
     },
     {
       name: "html",
       type: "code",
       admin: { language: "html", description: "Template HTML with {{placeholders}}." },
     },
-    {
-      name: "css",
-      type: "code",
-      admin: { language: "css" },
-    },
+    { name: "css", type: "code", admin: { language: "css" } },
   ],
 };

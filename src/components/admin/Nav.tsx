@@ -7,21 +7,18 @@ import { usePathname } from "next/navigation";
 interface Entry {
   href: string;
   label: string;
-  countSlug?: string; // Payload collection slug to fetch totalDocs from
+  countSlug?: string;
   isGlobal?: boolean;
 }
 
-// Flat sidebar order. Add more entries here as collections are added.
 const ENTRIES: Entry[] = [
   { href: "/admin/collections/pages", label: "Pages", countSlug: "pages" },
-  { href: "/admin/collections/posts", label: "Posts", countSlug: "posts" },
+  { href: "/admin/collections/blog", label: "Blog", countSlug: "blog" },
   { href: "/admin/collections/products", label: "Products", countSlug: "products" },
   { href: "/admin/collections/orders", label: "Orders", countSlug: "orders" },
   { href: "/admin/collections/users", label: "Users", countSlug: "users" },
   { href: "/admin/collections/media", label: "Media", countSlug: "media" },
   { href: "/admin/collections/templates", label: "Templates", countSlug: "templates" },
-  { href: "/admin/collections/post-types", label: "Post Types", countSlug: "post-types" },
-  { href: "/admin/collections/custom-fields", label: "Custom Fields", countSlug: "custom-fields" },
   { href: "/admin/globals/settings", label: "Settings", isGlobal: true },
 ];
 
@@ -37,7 +34,6 @@ export const AskaNav = () => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // Counts in parallel; ignore any that 404 (collection missing).
       const results = await Promise.all(
         ENTRIES.filter((e) => e.countSlug).map(async (e) => {
           try {

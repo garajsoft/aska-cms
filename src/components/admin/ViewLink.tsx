@@ -18,7 +18,7 @@ const style: CSSProperties = {
   marginRight: "8px",
 };
 
-/** Renders a "View" link for Pages using the doc's own slug. */
+/** "View" link for Pages using the doc's slug. */
 export const ViewPageLink = () => {
   const info = useDocumentInfo() as { savedDocumentData?: { slug?: string; _status?: string } };
   const slug = info.savedDocumentData?.slug;
@@ -31,29 +31,27 @@ export const ViewPageLink = () => {
   );
 };
 
-/** Renders a "View" link for Posts using postType.slug + doc slug. */
-export const ViewPostLink = () => {
-  const info = useDocumentInfo() as {
-    savedDocumentData?: {
-      slug?: string;
-      _status?: string;
-      postType?: { slug?: string } | string | number;
-    };
-  };
-  const data = info.savedDocumentData;
-  const slug = data?.slug;
-  const pt = data?.postType;
-  const ptSlug = pt && typeof pt === "object" ? pt.slug : undefined;
-  if (!slug || !ptSlug) return null;
-  const isDraft = data?._status !== "published";
+/** "View" link for Blog posts — /blog/<slug>. */
+export const ViewBlogLink = () => {
+  const info = useDocumentInfo() as { savedDocumentData?: { slug?: string; _status?: string } };
+  const slug = info.savedDocumentData?.slug;
+  if (!slug) return null;
+  const isDraft = info.savedDocumentData?._status !== "published";
   return (
-    <a
-      href={`/${ptSlug}/${slug}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={style}
-    >
+    <a href={`/blog/${slug}`} target="_blank" rel="noopener noreferrer" style={style}>
       View{isDraft ? " (draft)" : ""} →
+    </a>
+  );
+};
+
+/** "View" link for Products — /products/<slug>. */
+export const ViewProductLink = () => {
+  const info = useDocumentInfo() as { savedDocumentData?: { slug?: string } };
+  const slug = info.savedDocumentData?.slug;
+  if (!slug) return null;
+  return (
+    <a href={`/products/${slug}`} target="_blank" rel="noopener noreferrer" style={style}>
+      View →
     </a>
   );
 };

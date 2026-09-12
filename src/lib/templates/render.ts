@@ -1,9 +1,9 @@
 /**
  * Tiny placeholder engine. Not a full template language — just:
- *   {{title}} {{slug}} {{id}}      → escaped built-ins
- *   {{fields.KEY}}                  → escaped custom-field value
- *   {{{fields.KEY}}}                → raw (unescaped) — use for HTML/URLs
- * Unknown placeholders render as empty string.
+ *   {{fieldName}}          → escaped
+ *   {{nested.path.here}}   → walks the object, escaped
+ *   {{{fieldName}}}        → raw (unescaped) — use for HTML fields
+ * Unknown / missing paths render as empty string.
  */
 
 const escapeHtml = (s: unknown) =>
@@ -14,41 +14,39 @@ const escapeHtml = (s: unknown) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 
-export interface RenderContext {
-  id: string | number;
-  title: string;
-  slug: string;
-  fields: Record<string, unknown>;
-}
-
-function resolve(path: string, ctx: RenderContext): unknown {
-  if (path === "title") return ctx.title;
-  if (path === "slug") return ctx.slug;
-  if (path === "id") return ctx.id;
-  if (path.startsWith("fields.")) {
-    const key = path.slice("fields.".length);
-    return ctx.fields[key];
+function resolvePath(root: unknown, path: string): unknown {
+  const parts = path.split(".");
+  let cur: unknown = root;
+  for (const p of parts) {
+    if (cur == null || typeof cur !== "object") return undefined;
+    cur = (cur as Record<string, unknown>)[p];
   }
-  return undefined;
+  return cur;
 }
 
-export function renderTemplate(html: string, ctx: RenderContext): string {
-  // Raw first (three braces), then escaped.
+export function renderTemplate(html: string, doc: Record<string, unknown>): string {
   return html
-    .replace(/\{\{\{\s*([\w.]+)\s*\}\}\}/g, (_m, path) => String(resolve(path, ctx) ?? ""))
-    .replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_m, path) => escapeHtml(resolve(path, ctx)));
+    .replace(/\{\{\{\s*([\w.]+)\s*\}\}\}/g, (_m, path) =>
+      String(resolvePath(doc, path) ?? "")
+    )
+    .replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_m, path) =>
+      escapeHtml(resolvePath(doc, path))
+    );
 }
 
-// Self-check — runs when invoked directly: `node --loader tsx render.ts` (dev only).
+// Self-check
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const out = renderTemplate("<h1>{{title}}</h1><p>{{fields.lede}}</p>{{{fields.body}}}", {
-    id: 1,
-    title: "Hi & bye",
-    slug: "hi",
-    fields: { lede: "A <em>tag</em>", body: "<p>raw</p>" },
-  });
+  const out = renderTemplate(
+    "<h1>{{title}}</h1><p>{{excerpt}}</p><img src={{{coverImage.url}}}> author={{author.email}}",
+    {
+      title: "Hi & bye",
+      excerpt: "A <em>tag</em>",
+      coverImage: { url: "https://x/y.jpg" },
+      author: { email: "a@b.com" },
+    }
+  );
   const expected =
-    "<h1>Hi &amp; bye</h1><p>A &lt;em&gt;tag&lt;/em&gt;</p><p>raw</p>";
+    "<h1>Hi &amp; bye</h1><p>A &lt;em&gt;tag&lt;/em&gt;</p><img src=https://x/y.jpg> author=a@b.com";
   if (out !== expected) {
     console.error("FAIL");
     console.error("got:  ", out);

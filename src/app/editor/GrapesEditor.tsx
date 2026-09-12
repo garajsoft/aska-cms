@@ -87,10 +87,11 @@ export function GrapesEditor({ target, initial, fieldKeys = [] }: Props) {
         content: "<code>{{slug}}</code>",
       });
       for (const key of fieldKeys) {
+        if (key === "title" || key === "slug") continue;
         bm.add(`aska-field-${key}`, {
           label: key,
-          category: "Custom Fields",
-          content: `<span data-aska-field="${key}">{{fields.${key}}}</span>`,
+          category: "Collection Fields",
+          content: `<span data-aska-field="${key}">{{${key}}}</span>`,
         });
       }
 

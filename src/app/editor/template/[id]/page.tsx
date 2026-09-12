@@ -12,27 +12,30 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-async function loadFieldKeysForPostType(
-  postTypeId: string | number | null
-): Promise<string[]> {
-  if (postTypeId == null) return [];
+/**
+ * Return the top-level field names of a collection so the Grapes palette can
+ * offer them as clickable "insert field" blocks. Handles the collapsible/tabs
+ * wrappers Payload allows.
+ */
+async function fieldNamesForCollection(slug: string): Promise<string[]> {
   const p = await getPayload({ config });
-  const r = await p.find({
-    collection: "custom-fields",
-    where: { attachedTo: { in: [postTypeId] } },
-    limit: 500,
-    depth: 0,
-  });
-  return r.docs.map((d) => d.key).filter(Boolean);
-}
-
-async function loadPostTypeSlug(
-  postTypeId: string | number | null
-): Promise<string | null> {
-  if (postTypeId == null) return null;
-  const p = await getPayload({ config });
-  const doc = await p.findByID({ collection: "post-types", id: postTypeId, depth: 0 }).catch(() => null);
-  return doc?.slug ?? null;
+  const coll = p.collections[slug];
+  if (!coll) return [];
+  const out: string[] = [];
+  const visit = (fields: unknown[]) => {
+    for (const f of fields) {
+      const field = f as { name?: string; type?: string; fields?: unknown[]; tabs?: { fields?: unknown[] }[] };
+      if (field.type === "collapsible" || field.type === "row" || field.type === "group") {
+        if (field.fields) visit(field.fields);
+      } else if (field.type === "tabs" && field.tabs) {
+        for (const t of field.tabs) if (t.fields) visit(t.fields);
+      } else if (field.name) {
+        out.push(field.name);
+      }
+    }
+  };
+  visit(coll.config.fields);
+  return out;
 }
 
 export default async function TemplateEditorPage({ params }: Props) {
@@ -45,14 +48,16 @@ export default async function TemplateEditorPage({ params }: Props) {
   const template = await readTemplate(id);
   if (!template) notFound();
 
-  const [fieldKeys, postTypeSlug] = await Promise.all([
-    loadFieldKeysForPostType(template.postTypeId),
-    loadPostTypeSlug(template.postTypeId),
-  ]);
+  const fieldKeys = await fieldNamesForCollection(template.collectionSlug);
 
   return (
     <GrapesEditor
-      target={{ mode: "template", id: template.id, name: template.name, postTypeSlug }}
+      target={{
+        mode: "template",
+        id: template.id,
+        name: template.name,
+        postTypeSlug: template.collectionSlug,
+      }}
       initial={{ html: template.html, css: template.css }}
       fieldKeys={fieldKeys}
     />
