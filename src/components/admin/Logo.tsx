@@ -1,4 +1,4 @@
-import { AskaMark, AskaIconMark } from "./AskaMark";
+import { AskaMark } from "./AskaMark";
 
 export const Logo = () => (
   <div
@@ -13,18 +13,8 @@ export const Logo = () => (
   </div>
 );
 
-export const Icon = () => (
-  <div
-    style={{
-      display: "grid",
-      placeItems: "center",
-      width: 28,
-      height: 28,
-      color: "var(--theme-elevation-1000)",
-    }}
-  >
-    <AskaIconMark size={22} />
-  </div>
-);
+// Return an empty fragment so the breadcrumbs header doesn't show
+// a tiny cropped mark next to "Dashboard".
+export const Icon = () => null;
 
 export default Logo;

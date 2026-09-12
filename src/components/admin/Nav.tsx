@@ -13,6 +13,7 @@ interface Entry {
 }
 
 const ENTRIES: Entry[] = [
+  { href: "/admin", label: "Dashboard" },
   { href: "/admin/collections/pages", label: "Pages", countSlug: "pages" },
   { href: "/admin/collections/blog", label: "Blog", countSlug: "blog" },
   { href: "/admin/collections/products", label: "Products", countSlug: "products" },
@@ -77,7 +78,10 @@ export const AskaNav = () => {
 
       <ul className="aska-nav__list">
         {ENTRIES.map((e) => {
-          const active = pathname === e.href || pathname.startsWith(`${e.href}/`);
+          const active =
+            e.href === "/admin"
+              ? pathname === "/admin"
+              : pathname === e.href || pathname.startsWith(`${e.href}/`);
           const n = e.countSlug ? counts[e.countSlug] : undefined;
           return (
             <li key={e.href}>
