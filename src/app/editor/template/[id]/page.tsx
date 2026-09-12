@@ -12,25 +12,30 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-/**
- * Return the top-level field names of a collection so the Grapes palette can
- * offer them as clickable "insert field" blocks. Handles the collapsible/tabs
- * wrappers Payload allows.
- */
-async function fieldNamesForCollection(slug: string): Promise<string[]> {
+export interface FieldMeta {
+  name: string;
+  type: string;
+}
+
+async function fieldsForCollection(slug: string): Promise<FieldMeta[]> {
   const p = await getPayload({ config });
   const coll = p.collections[slug];
   if (!coll) return [];
-  const out: string[] = [];
+  const out: FieldMeta[] = [];
   const visit = (fields: unknown[]) => {
     for (const f of fields) {
-      const field = f as { name?: string; type?: string; fields?: unknown[]; tabs?: { fields?: unknown[] }[] };
+      const field = f as {
+        name?: string;
+        type?: string;
+        fields?: unknown[];
+        tabs?: { fields?: unknown[] }[];
+      };
       if (field.type === "collapsible" || field.type === "row" || field.type === "group") {
         if (field.fields) visit(field.fields);
       } else if (field.type === "tabs" && field.tabs) {
         for (const t of field.tabs) if (t.fields) visit(t.fields);
       } else if (field.name) {
-        out.push(field.name);
+        out.push({ name: field.name, type: field.type ?? "text" });
       }
     }
   };
@@ -48,7 +53,7 @@ export default async function TemplateEditorPage({ params }: Props) {
   const template = await readTemplate(id);
   if (!template) notFound();
 
-  const fieldKeys = await fieldNamesForCollection(template.collectionSlug);
+  const fields = await fieldsForCollection(template.collectionSlug);
 
   return (
     <GrapesEditor
@@ -59,7 +64,7 @@ export default async function TemplateEditorPage({ params }: Props) {
         postTypeSlug: template.collectionSlug,
       }}
       initial={{ html: template.html, css: template.css }}
-      fieldKeys={fieldKeys}
+      fields={fields}
     />
   );
 }

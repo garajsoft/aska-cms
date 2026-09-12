@@ -8,10 +8,38 @@ export type EditorTarget =
   | { mode: "page"; slug: string; title: string }
   | { mode: "template"; id: string | number; name: string; postTypeSlug: string | null };
 
+export interface FieldMeta {
+  name: string;
+  type: string;
+}
+
 interface Props {
   target: EditorTarget;
   initial: { html: string; css: string };
-  fieldKeys?: string[];
+  fields?: FieldMeta[];
+}
+
+/**
+ * Return the GrapesJS block content for a given field, using the correct
+ * placeholder syntax so the render engine substitutes safely:
+ *   richText → {{{name}}} (raw HTML)
+ *   upload   → <img src="{{name.url}}" alt="{{name.alt}}"> (populated media object)
+ *   date     → {{name}} (string form)
+ *   text/textarea/number/… → {{name}} (escaped)
+ */
+function contentForField(f: FieldMeta): string {
+  switch (f.type) {
+    case "richText":
+      return `<div data-aska-field="${f.name}">{{{${f.name}}}}</div>`;
+    case "upload":
+      return `<img data-aska-field="${f.name}" src="{{${f.name}.url}}" alt="{{${f.name}.alt}}">`;
+    case "textarea":
+      return `<p data-aska-field="${f.name}">{{${f.name}}}</p>`;
+    case "relationship":
+      return `<span data-aska-field="${f.name}">{{${f.name}.id}}</span>`;
+    default:
+      return `<span data-aska-field="${f.name}">{{${f.name}}}</span>`;
+  }
 }
 
 function buildSaveUrl(t: EditorTarget) {
@@ -35,7 +63,7 @@ function label(t: EditorTarget): string {
   return t.mode === "page" ? `/${t.slug}` : `${t.name} (template)`;
 }
 
-export function GrapesEditor({ target, initial, fieldKeys = [] }: Props) {
+export function GrapesEditor({ target, initial, fields = [] }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<Editor | null>(null);
   const [saving, setSaving] = useState(false);
@@ -86,12 +114,12 @@ export function GrapesEditor({ target, initial, fieldKeys = [] }: Props) {
         category: "Fields",
         content: "<code>{{slug}}</code>",
       });
-      for (const key of fieldKeys) {
-        if (key === "title" || key === "slug") continue;
-        bm.add(`aska-field-${key}`, {
-          label: key,
+      for (const f of fields) {
+        if (f.name === "title" || f.name === "slug") continue;
+        bm.add(`aska-field-${f.name}`, {
+          label: `${f.name}${f.type !== "text" ? ` · ${f.type}` : ""}`,
           category: "Collection Fields",
-          content: `<span data-aska-field="${key}">{{${key}}}</span>`,
+          content: contentForField(f),
         });
       }
 
@@ -101,7 +129,7 @@ export function GrapesEditor({ target, initial, fieldKeys = [] }: Props) {
       cancelled = true;
       editorRef.current?.destroy();
     };
-  }, [initial.html, initial.css, target, fieldKeys]);
+  }, [initial.html, initial.css, target, fields]);
 
   async function handleSave() {
     if (!editorRef.current) return;
