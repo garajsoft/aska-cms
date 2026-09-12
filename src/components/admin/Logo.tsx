@@ -13,8 +13,21 @@ export const Logo = () => (
   </div>
 );
 
-// Return an empty fragment so the breadcrumbs header doesn't show
-// a tiny cropped mark next to "Dashboard".
-export const Icon = () => null;
+// The "Icon" slot sits at the start of Payload's breadcrumb. Show a
+// text "Dashboard" link instead of a cropped mark.
+export const Icon = () => (
+  <a
+    href="/admin"
+    style={{
+      color: "inherit",
+      textDecoration: "none",
+      fontSize: 13,
+      fontWeight: 500,
+      padding: "0 4px",
+    }}
+  >
+    Dashboard
+  </a>
+);
 
 export default Logo;
