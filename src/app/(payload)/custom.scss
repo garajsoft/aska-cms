@@ -31,6 +31,26 @@ a.btn--style-primary {
   color: var(--theme-success-500);
 }
 
+/* Payload's app header shrinks the icon slot; let breadcrumbs breathe. */
+.app-header,
+.app-header__content,
+.app-header__step-nav,
+.step-nav,
+.step-nav__nav {
+  min-width: 0;
+  overflow: visible !important;
+}
+.step-nav a,
+.step-nav__last {
+  white-space: nowrap;
+}
+.graphic-icon,
+.icon--graphic {
+  width: auto !important;
+  min-width: 100px;
+  overflow: visible !important;
+}
+
 /* ---------------- Custom sidebar (AskaNav) ---------------- */
 .aska-nav {
   display: flex;
