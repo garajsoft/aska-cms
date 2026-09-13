@@ -1,4 +1,5 @@
 import "server-only";
+import Link from "next/link";
 import { getPayload } from "payload";
 import config from "@/payload.config";
 
@@ -101,9 +102,9 @@ export const AskaDashboard = async () => {
           <div className="aska-dashboard__eyebrow">Dashboard</div>
           <h1 className="aska-dashboard__title">Overview</h1>
         </div>
-        <a href="/admin/globals/settings#dashboard" className="aska-dashboard__edit">
+        <Link href="/admin/globals/settings#dashboard" className="aska-dashboard__edit">
           Edit dashboard
-        </a>
+        </Link>
       </header>
 
       <div className="aska-dashboard__grid">

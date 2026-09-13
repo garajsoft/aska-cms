@@ -57,9 +57,9 @@ export default async function Home() {
         ))}
       </ul>
       <div className="flex gap-3">
-        <a href="/admin" className="rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-black/5">
+        <Link href="/admin" className="rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-black/5">
           Open admin
-        </a>
+        </Link>
       </div>
     </div>
   );

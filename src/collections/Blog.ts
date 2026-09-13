@@ -1,7 +1,8 @@
 import type { CollectionConfig } from "payload";
 import {
-  lexicalEditor,
   FixedToolbarFeature,
+  InlineToolbarFeature,
+  lexicalEditor,
   UploadFeature,
 } from "@payloadcms/richtext-lexical";
 
@@ -25,15 +26,25 @@ export const Blog: CollectionConfig = {
     { name: "title", type: "text", required: true },
     {
       name: "content",
+      label: "Body",
       type: "richText",
+      required: true,
+      admin: {
+        description:
+          "Write the blog post body here. Use the toolbar or slash menu to format text and insert images.",
+      },
       editor: lexicalEditor({
         features: ({ defaultFeatures }) => [
           ...defaultFeatures,
           FixedToolbarFeature(),
+          InlineToolbarFeature(),
           UploadFeature({
+            enabledCollections: ["media"],
             collections: {
               media: {
                 fields: [
+                  { name: "alt", type: "text", label: "Alt text" },
+                  { name: "caption", type: "text", label: "Caption" },
                   {
                     name: "width",
                     type: "text",
@@ -43,8 +54,6 @@ export const Blog: CollectionConfig = {
                         "CSS width — e.g. 100%, 400px, 50vw. (Drag-to-resize planned.)",
                     },
                   },
-                  { name: "alt", type: "text", label: "Alt text" },
-                  { name: "caption", type: "text", label: "Caption" },
                 ],
               },
             },

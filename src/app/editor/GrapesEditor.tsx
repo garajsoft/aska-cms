@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { Editor } from "grapesjs";
 import "grapesjs/dist/css/grapes.min.css";
 
@@ -158,7 +159,7 @@ export function GrapesEditor({ target, initial, fields = [] }: Props) {
     <div className="flex h-screen w-screen flex-col bg-white">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-black/10 bg-white px-4 text-sm">
         <div className="flex items-center gap-3">
-          <a href="/admin" className="text-zinc-500 hover:text-black">←</a>
+          <Link href="/admin" className="text-zinc-500 hover:text-black">←</Link>
           <span className="font-medium">Editing</span>
           <code className="rounded bg-zinc-100 px-2 py-0.5 text-xs">{label(target)}</code>
           {error && (
