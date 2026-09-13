@@ -1,0 +1,19 @@
+name: Push DB schema
+
+on:
+  workflow_dispatch:
+
+jobs:
+  push-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx tsx scripts/push-schema.ts
+        env:
+          NODE_ENV: production
+          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
