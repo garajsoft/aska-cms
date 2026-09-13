@@ -38,6 +38,7 @@ import {
   UnorderedListFeatureClient as UnorderedListFeatureClient_1,
   UploadFeatureClient as UploadFeatureClient_1,
 } from "@payloadcms/richtext-lexical/client";
+import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_2 } from "@payloadcms/storage-vercel-blob/client";
 
 export const importMap = {
   "@/components/admin/Logo#Logo": Logo_0,
@@ -73,4 +74,5 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_1,
   "@payloadcms/richtext-lexical/client#UnorderedListFeatureClient": UnorderedListFeatureClient_1,
   "@payloadcms/richtext-lexical/client#UploadFeatureClient": UploadFeatureClient_1,
+  "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_2,
 };
