@@ -50,6 +50,16 @@ const providerFields = (
   },
 ];
 
+const CURRENCY_OPTIONS = [
+  { label: "AUD — Australian dollar", value: "AUD" },
+  { label: "CAD — Canadian dollar", value: "CAD" },
+  { label: "EUR — Euro", value: "EUR" },
+  { label: "GBP — British pound", value: "GBP" },
+  { label: "JPY — Japanese yen", value: "JPY" },
+  { label: "NZD — New Zealand dollar", value: "NZD" },
+  { label: "USD — US dollar", value: "USD" },
+];
+
 export const Settings: GlobalConfig = {
   slug: "settings",
   access: { read: () => true },
@@ -96,6 +106,33 @@ export const Settings: GlobalConfig = {
                   },
                 },
               ],
+            },
+          ],
+        },
+        {
+          label: "Currencies",
+          description:
+            "Which currencies the site supports. Product and variant prices are entered in the default currency.",
+          fields: [
+            {
+              name: "currencies",
+              type: "select",
+              hasMany: true,
+              defaultValue: ["USD"],
+              options: CURRENCY_OPTIONS,
+              admin: {
+                description:
+                  "Currencies available across the site. Add to enable, remove to disable.",
+              },
+            },
+            {
+              name: "defaultCurrency",
+              type: "select",
+              defaultValue: "USD",
+              options: CURRENCY_OPTIONS,
+              admin: {
+                description: "The currency all product prices are entered in.",
+              },
             },
           ],
         },

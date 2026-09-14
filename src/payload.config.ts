@@ -97,40 +97,91 @@ export default buildConfig({
         // The plugin's default products collection only has inventory + per-currency
         // price groups — no name/slug/description/images, so products were barely
         // editable and the storefront (/products/[slug]) couldn't resolve anything.
-        // Add the merchandising fields and keep every default field the plugin
-        // generates (inventory, priceInUSD/EUR/GBP).
-        productsCollectionOverride: ({ defaultCollection }) => ({
-          ...defaultCollection,
-          admin: {
-            ...defaultCollection.admin,
-            useAsTitle: "name",
-            defaultColumns: ["name", "slug", "_status", "updatedAt"],
-            listSearchableFields: ["name", "slug"],
-          },
-          fields: [
-            { name: "name", type: "text", required: true },
-            {
-              name: "slug",
-              type: "text",
-              required: true,
-              unique: true,
-              index: true,
-              admin: { description: "URL segment: /products/<slug>." },
+        // Add the merchandising fields, replace the per-currency price groups with a
+        // single `price`, and keep every other default field (inventory, variants).
+        // Currencies are managed in Settings → Currencies.
+        productsCollectionOverride: ({ defaultCollection }) => {
+          const fields = defaultCollection.fields.filter(
+            (f) =>
+              !("name" in f && typeof f.name === "string" && f.name.startsWith("priceIn"))
+          );
+          // Point the variants join columns at the new single-price field.
+          const variantsJoin = fields.find(
+            (f) => "name" in f && f.name === "variants" && "admin" in f
+          );
+          if (variantsJoin) {
+            (variantsJoin.admin as { defaultColumns?: string[] }).defaultColumns = [
+              "title",
+              "options",
+              "inventory",
+              "price",
+              "_status",
+            ];
+          }
+          return {
+            ...defaultCollection,
+            admin: {
+              ...defaultCollection.admin,
+              useAsTitle: "name",
+              defaultColumns: ["name", "slug", "price", "_status", "updatedAt"],
+              listSearchableFields: ["name", "slug"],
             },
-            {
-              name: "description",
-              type: "richText",
-              label: "Description",
-            },
-            {
-              name: "images",
-              type: "upload",
-              relationTo: "media",
-              hasMany: true,
-            },
-            ...defaultCollection.fields,
-          ],
-        }),
+            fields: [
+              { name: "name", type: "text", required: true },
+              {
+                name: "slug",
+                type: "text",
+                required: true,
+                unique: true,
+                index: true,
+                admin: { description: "URL segment: /products/<slug>." },
+              },
+              {
+                name: "description",
+                type: "richText",
+                label: "Description",
+              },
+              {
+                name: "images",
+                type: "upload",
+                relationTo: "media",
+                hasMany: true,
+              },
+              {
+                name: "price",
+                type: "number",
+                min: 0,
+                admin: {
+                  description:
+                    "In the site's default currency — set under Settings → Currencies.",
+                },
+              },
+              ...fields,
+            ],
+          };
+        },
+        variants: {
+          // Same pricing simplification for variants: one `price` instead of the
+          // per-currency groups.
+          variantsCollectionOverride: ({ defaultCollection }) => ({
+            ...defaultCollection,
+            fields: [
+              ...defaultCollection.fields.filter(
+                (f) =>
+                  !("name" in f && typeof f.name === "string" && f.name.startsWith("priceIn"))
+              ),
+              {
+                name: "price",
+                type: "number",
+                min: 0,
+                admin: {
+                  description:
+                    "In the site's default currency — set under Settings → Currencies.",
+                },
+              },
+            ],
+          }),
+        },
       },
       currencies: {
         supportedCurrencies: [USD, EUR, GBP],
