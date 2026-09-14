@@ -27,8 +27,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const doc = await fetchProduct(slug);
   if (!doc) return { title: "Not found" };
   const title = (doc as { title?: string; name?: string }).title ?? (doc as { name?: string }).name;
-  const description = (doc as { description?: string }).description || undefined;
+  // description is a Lexical rich-text tree, not a string — flatten to plain text
+  const raw = (doc as { description?: unknown }).description;
+  const description =
+    typeof raw === "string"
+      ? raw
+      : raw && typeof raw === "object"
+        ? flattenLexicalText(raw as { root?: { children?: unknown[] } })
+        : undefined;
   return { title, description };
+}
+
+function flattenLexicalText(node: unknown): string {
+  if (!node || typeof node !== "object") return "";
+  const n = node as { text?: string; children?: unknown[] };
+  const parts: string[] = [];
+  if (typeof n.text === "string") parts.push(n.text);
+  for (const child of n.children ?? []) {
+    const t = flattenLexicalText(child);
+    if (t) parts.push(t);
+  }
+  return parts.join(" ").replace(/\s+/g, " ").trim();
 }
 
 export default async function Page({ params }: Props) {

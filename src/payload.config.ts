@@ -93,7 +93,45 @@ export default buildConfig({
         isDocumentOwner: isSignedIn,
       },
       customers: { slug: Users.slug },
-      products: true,
+      products: {
+        // The plugin's default products collection only has inventory + per-currency
+        // price groups — no name/slug/description/images, so products were barely
+        // editable and the storefront (/products/[slug]) couldn't resolve anything.
+        // Add the merchandising fields and keep every default field the plugin
+        // generates (inventory, priceInUSD/EUR/GBP).
+        productsCollectionOverride: ({ defaultCollection }) => ({
+          ...defaultCollection,
+          admin: {
+            ...defaultCollection.admin,
+            useAsTitle: "name",
+            defaultColumns: ["name", "slug", "_status", "updatedAt"],
+            listSearchableFields: ["name", "slug"],
+          },
+          fields: [
+            { name: "name", type: "text", required: true },
+            {
+              name: "slug",
+              type: "text",
+              required: true,
+              unique: true,
+              index: true,
+              admin: { description: "URL segment: /products/<slug>." },
+            },
+            {
+              name: "description",
+              type: "richText",
+              label: "Description",
+            },
+            {
+              name: "images",
+              type: "upload",
+              relationTo: "media",
+              hasMany: true,
+            },
+            ...defaultCollection.fields,
+          ],
+        }),
+      },
       currencies: {
         supportedCurrencies: [USD, EUR, GBP],
         defaultCurrency: "USD",
