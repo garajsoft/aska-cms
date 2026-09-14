@@ -48,12 +48,19 @@ a.btn--style-primary {
    Logo.tsx), leaving a blank before the first "/". Show the word "Dashboard"
    there instead — sized to match the other crumbs, never clipped. */
 .step-nav__home span {
+  display: inline-block;
   width: auto;
   height: auto;
   overflow: visible;
   font-size: 12px;
   font-weight: 600;
   line-height: 20px;
+}
+.step-nav__home {
+  width: auto;
+  height: auto;
+  min-width: max-content;
+  flex-shrink: 0;
 }
 .step-nav__home span::before {
   content: "Dashboard";
