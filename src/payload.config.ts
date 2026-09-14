@@ -21,6 +21,15 @@ const dirname = path.dirname(filename);
 // Simple starter access: any signed-in user is admin. Tighten before shipping.
 const isSignedIn = ({ req }: { req: { user?: unknown } }) => Boolean(req.user);
 
+// The ecommerce plugin builds its per-currency price fields as NAMELESS group
+// fields whose inner fields are `priceInUSDEnabled` / `priceInUSD` etc. — so a
+// name-based filter never matches. Detect them by their serialized children.
+const isCurrencyPriceGroup = (f: unknown): boolean =>
+  typeof f === "object" &&
+  f !== null &&
+  (f as { type?: string }).type === "group" &&
+  JSON.stringify(f).includes('"priceIn');
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -101,10 +110,7 @@ export default buildConfig({
         // single `price`, and keep every other default field (inventory, variants).
         // Currencies are managed in Settings → Currencies.
         productsCollectionOverride: ({ defaultCollection }) => {
-          const fields = defaultCollection.fields.filter(
-            (f) =>
-              !("name" in f && typeof f.name === "string" && f.name.startsWith("priceIn"))
-          );
+          const fields = defaultCollection.fields.filter((f) => !isCurrencyPriceGroup(f));
           // Point the variants join columns at the new single-price field.
           const variantsJoin = fields.find(
             (f) => "name" in f && f.name === "variants" && "admin" in f
@@ -166,10 +172,7 @@ export default buildConfig({
           variantsCollectionOverride: ({ defaultCollection }) => ({
             ...defaultCollection,
             fields: [
-              ...defaultCollection.fields.filter(
-                (f) =>
-                  !("name" in f && typeof f.name === "string" && f.name.startsWith("priceIn"))
-              ),
+              ...defaultCollection.fields.filter((f) => !isCurrencyPriceGroup(f)),
               {
                 name: "price",
                 type: "number",
