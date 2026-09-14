@@ -15,7 +15,21 @@ interface Props {
 export interface FieldMeta {
   name: string;
   type: string;
+  label?: string;
+  hasMany?: boolean;
 }
+
+/** Palette section per collection slug. */
+export const FIELD_CATEGORY: Record<string, string> = {
+  products: "Ecommerce",
+  blog: "Blog",
+};
+
+const prettify = (name: string): string =>
+  name
+    .replace(/_/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 
 async function fieldsForCollection(slug: string): Promise<FieldMeta[]> {
   const p = await getPayload({ config });
@@ -27,6 +41,8 @@ async function fieldsForCollection(slug: string): Promise<FieldMeta[]> {
       const field = f as {
         name?: string;
         type?: string;
+        label?: unknown;
+        hasMany?: boolean;
         fields?: unknown[];
         tabs?: { fields?: unknown[] }[];
       };
@@ -35,7 +51,12 @@ async function fieldsForCollection(slug: string): Promise<FieldMeta[]> {
       } else if (field.type === "tabs" && field.tabs) {
         for (const t of field.tabs) if (t.fields) visit(t.fields);
       } else if (field.name) {
-        out.push({ name: field.name, type: field.type ?? "text" });
+        out.push({
+          name: field.name,
+          type: field.type ?? "text",
+          label: typeof field.label === "string" ? field.label : prettify(field.name),
+          hasMany: Boolean(field.hasMany),
+        });
       }
     }
   };
@@ -65,6 +86,7 @@ export default async function TemplateEditorPage({ params }: Props) {
       }}
       initial={{ html: template.html, css: template.css }}
       fields={fields}
+      fieldCategory={FIELD_CATEGORY[template.collectionSlug] ?? "Collection Fields"}
     />
   );
 }

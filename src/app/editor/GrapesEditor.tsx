@@ -12,12 +12,16 @@ export type EditorTarget =
 export interface FieldMeta {
   name: string;
   type: string;
+  label?: string;
+  hasMany?: boolean;
 }
 
 interface Props {
   target: EditorTarget;
   initial: { html: string; css: string };
   fields?: FieldMeta[];
+  /** Palette section for the per-field blocks (e.g. "Ecommerce", "Blog"). */
+  fieldCategory?: string;
 }
 
 /**
@@ -33,7 +37,9 @@ function contentForField(f: FieldMeta): string {
     case "richText":
       return `<div data-aska-field="${f.name}">{{{${f.name}}}}</div>`;
     case "upload":
-      return `<img data-aska-field="${f.name}" src="{{${f.name}.url}}" alt="{{${f.name}.alt}}">`;
+      return f.hasMany
+        ? `<img data-aska-field="${f.name}" src="{{${f.name}.0.url}}" alt="{{${f.name}.0.alt}}">`
+        : `<img data-aska-field="${f.name}" src="{{${f.name}.url}}" alt="{{${f.name}.alt}}">`;
     case "textarea":
       return `<p data-aska-field="${f.name}">{{${f.name}}}</p>`;
     case "relationship":
@@ -42,6 +48,34 @@ function contentForField(f: FieldMeta): string {
       return `<span data-aska-field="${f.name}">{{${f.name}}}</span>`;
   }
 }
+
+/** Loop blocks: render the inner content once per post/product on pages. */
+const LOOP_BLOCKS = [
+  {
+    id: "aska-loop-posts",
+    label: "Posts loop",
+    content: `<div data-aska-loop="posts">
+{{#each posts}}
+<article style="margin-bottom:24px">
+  <h3><a href="/blog/{{slug}}">{{title}}</a></h3>
+  <p>{{excerpt}}</p>
+</article>
+{{/each}}
+</div>`,
+  },
+  {
+    id: "aska-loop-products",
+    label: "Products loop",
+    content: `<div data-aska-loop="products">
+{{#each products}}
+<article style="margin-bottom:24px">
+  <h3><a href="/products/{{slug}}">{{name}}</a></h3>
+  <p>{{price}}</p>
+</article>
+{{/each}}
+</div>`,
+  },
+];
 
 function buildSaveUrl(t: EditorTarget) {
   return t.mode === "page"
@@ -64,7 +98,7 @@ function label(t: EditorTarget): string {
   return t.mode === "page" ? `/${t.slug}` : `${t.name} (template)`;
 }
 
-export function GrapesEditor({ target, initial, fields = [] }: Props) {
+export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Collection Fields" }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<Editor | null>(null);
   const [saving, setSaving] = useState(false);
@@ -103,23 +137,28 @@ export function GrapesEditor({ target, initial, fields = [] }: Props) {
         pluginsOpts: { "grapesjs-blocks-basic": { flexGrid: true } },
       });
 
-      // Add built-in placeholders (title, slug) always available.
+      // Built-in placeholders (title, slug) always available; loop blocks for
+      // listing posts/products on pages; then the collection's own fields in
+      // their dedicated palette section (Ecommerce / Blog / …), labeled.
       const bm = editor.BlockManager;
       bm.add("aska-field-title", {
-        label: "Post title",
+        label: "Title",
         category: "Fields",
         content: '<h1>{{title}}</h1>',
       });
       bm.add("aska-field-slug", {
-        label: "Post slug",
+        label: "Slug",
         category: "Fields",
         content: "<code>{{slug}}</code>",
       });
+      for (const loop of LOOP_BLOCKS) {
+        bm.add(loop.id, { label: loop.label, category: "Loops", content: loop.content });
+      }
       for (const f of fields) {
         if (f.name === "title" || f.name === "slug") continue;
         bm.add(`aska-field-${f.name}`, {
-          label: `${f.name}${f.type !== "text" ? ` · ${f.type}` : ""}`,
-          category: "Collection Fields",
+          label: `${f.label ?? f.name}${f.type !== "text" ? ` · ${f.type}` : ""}`,
+          category: fieldCategory,
           content: contentForField(f),
         });
       }
@@ -130,7 +169,7 @@ export function GrapesEditor({ target, initial, fields = [] }: Props) {
       cancelled = true;
       editorRef.current?.destroy();
     };
-  }, [initial.html, initial.css, target, fields]);
+  }, [initial.html, initial.css, target, fields, fieldCategory]);
 
   async function handleSave() {
     if (!editorRef.current) return;

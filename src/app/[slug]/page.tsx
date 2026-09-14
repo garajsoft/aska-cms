@@ -1,4 +1,6 @@
 import { readPage } from "@/lib/pages/repo";
+import { pageRenderContext } from "@/lib/pages/context";
+import { renderTemplate } from "@/lib/templates/render";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -38,10 +40,11 @@ export default async function Page({ params }: Props) {
   const { slug } = await params;
   const page = await readPage(slug, { publishedOnly: true });
   if (!page) notFound();
+  const ctx = await pageRenderContext(page);
   return (
     <>
       {page.css && <style dangerouslySetInnerHTML={{ __html: page.css }} />}
-      <div dangerouslySetInnerHTML={{ __html: page.html }} />
+      <div dangerouslySetInnerHTML={{ __html: renderTemplate(page.html, ctx) }} />
     </>
   );
 }
