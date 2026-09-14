@@ -44,6 +44,24 @@ a.btn--style-primary {
   white-space: nowrap;
 }
 
+/* Breadcrumb home crumb: the Icon slot renders empty (Icon returns null in
+   Logo.tsx), leaving a blank before the first "/". Show the word "Dashboard"
+   there instead — sized to match the other crumbs, never clipped. */
+.step-nav__home span {
+  width: auto;
+  height: auto;
+  overflow: visible;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.step-nav__home span::before {
+  content: "Dashboard";
+}
+.step-nav__home:hover span::before {
+  text-decoration: underline;
+}
+
 /* ---------------- Custom sidebar (AskaNav) ---------------- */
 .aska-nav {
   display: flex;
