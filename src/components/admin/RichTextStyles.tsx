@@ -8,7 +8,7 @@ export function RichTextStyles() {
     let startX = 0;
     let startY = 0;
     let startWidth = 0;
-    let startHeight = 0;
+    let resizeAspectRatio = 1;
 
     // Setup resize on image
     const setupImageResize = (img: HTMLImageElement) => {
@@ -42,7 +42,15 @@ export function RichTextStyles() {
         startX = e.clientX;
         startY = e.clientY;
         startWidth = img.offsetWidth || img.width || 400;
-        startHeight = img.offsetHeight || img.height || 300;
+        // Lock the ratio to the image's true intrinsic dimensions, not its
+        // current rendered (integer-rounded) size - deriving it from
+        // offsetWidth/offsetHeight every drag let rounding drift compound
+        // across repeated resizes, especially once clamped at the minimum
+        // width, so the image slowly stopped matching its original shape.
+        resizeAspectRatio =
+          img.naturalWidth && img.naturalHeight
+            ? img.naturalHeight / img.naturalWidth
+            : (img.offsetHeight || img.height || 300) / startWidth;
         document.body.style.userSelect = "none";
         document.body.style.cursor = "se-resize";
         e.preventDefault();
@@ -69,14 +77,26 @@ export function RichTextStyles() {
       });
     };
 
+    // Widest the image can go before it overflows the editor's text area.
+    // Upload nodes are wrapped in their own contenteditable="false" decorator,
+    // so closest("[contenteditable]") from the img would match that instead
+    // of the real editable root - target data-lexical-editor specifically.
+    const getMaxWidth = (img: HTMLImageElement): number => {
+      const container = img.closest<HTMLElement>('[data-lexical-editor]');
+      if (!container) return Infinity;
+      const style = getComputedStyle(container);
+      const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+      return Math.max(60, container.clientWidth - padding);
+    };
+
     // Global mouse move handler
     const onMouseMove = (e: MouseEvent) => {
       if (!resizingImg) return;
 
       const deltaX = e.clientX - startX;
-      const newWidth = Math.max(60, startWidth + deltaX);
-      const aspectRatio = startHeight / startWidth;
-      const newHeight = newWidth * aspectRatio;
+      const maxWidth = getMaxWidth(resizingImg);
+      const newWidth = Math.min(maxWidth, Math.max(60, startWidth + deltaX));
+      const newHeight = newWidth * resizeAspectRatio;
 
       resizingImg.style.width = newWidth + "px";
       resizingImg.style.height = newHeight + "px";
