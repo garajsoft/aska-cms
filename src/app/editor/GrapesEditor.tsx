@@ -64,6 +64,8 @@ const ICONS = {
   video: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`,
   form: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm1 5h3v3H6V8zm0 5h3v3H6v-3z"/></svg>`,
   code: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  marquee: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 4H5c-1 0-2 1-2 2v12c0 1 1 2 2 2h14c1 0 2-1 2-2V6c0-1-1-2-2-2zm-2 6l-3 3-3-3"/></svg>`,
+  upload: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>`,
 };
 
 /** Layout & component blocks */
@@ -96,23 +98,65 @@ const COMPONENT_BLOCKS = [
     icon: "quote",
     content: '<div style="padding:32px;background:#f9f9f9;border-radius:8px;border-left:4px solid #667eea;max-width:600px"><p style="margin:0 0 16px;font-style:italic;font-size:18px">"This product changed how we work."</p><p style="margin:0;font-weight:600">– Customer Name</p></div>',
   },
+  {
+    id: "aska-marquee-text",
+    label: "Scrolling text marquee",
+    category: "Effects",
+    icon: "marquee",
+    content: '<div style="overflow:hidden;background:#f0f4ff;padding:20px;border-radius:8px"><div style="display:flex;animation:scroll 20s linear infinite;white-space:nowrap;padding-right:100px"><span style="font-size:24px;font-weight:700;color:#667eea;margin-right:100px">⭐ Special offer • Limited time only • Get 50% off • ⭐ Special offer • Limited time only • Get 50% off •</span></div><style>@keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }</style></div>',
+  },
+  {
+    id: "aska-marquee-image",
+    label: "Scrolling image carousel",
+    category: "Effects",
+    icon: "marquee",
+    content: '<div style="overflow:hidden;padding:20px;border-radius:8px;background:#f9f9f9"><div style="display:flex;gap:24px;animation:scroll 30s linear infinite;padding-right:24px"><div style="flex:0 0 300px;height:200px;background:#e0e6ed;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999">Image 1</div><div style="flex:0 0 300px;height:200px;background:#e0e6ed;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999">Image 2</div><div style="flex:0 0 300px;height:200px;background:#e0e6ed;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999">Image 3</div><div style="flex:0 0 300px;height:200px;background:#e0e6ed;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999">Image 1</div><div style="flex:0 0 300px;height:200px;background:#e0e6ed;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999">Image 2</div><div style="flex:0 0 300px;height:200px;background:#e0e6ed;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999">Image 3</div></div><style>@keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }</style></div>',
+  },
+  {
+    id: "aska-image-gallery",
+    label: "Image gallery",
+    category: "Media",
+    icon: "image",
+    content: '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:24px"><div style="aspect-ratio:1;background:#e0e6ed;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;cursor:pointer">Click to add image</div><div style="aspect-ratio:1;background:#e0e6ed;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;cursor:pointer">Click to add image</div><div style="aspect-ratio:1;background:#e0e6ed;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;cursor:pointer">Click to add image</div></div>',
+  },
 ];
 
 /** Loop blocks: render the inner content once per post/product on pages. */
 const LOOP_BLOCKS = [
   {
-    id: "aska-loop-posts",
-    label: "Posts loop",
-    category: "Loops",
+    id: "aska-loop-posts-grid",
+    label: "Posts - Grid (3 cols)",
+    category: "Blog Loops",
+    icon: "grid",
+    content: '<div data-aska-loop="posts" data-layout="grid" data-cols="3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">{{#each posts}}<article style="padding:24px;border:1px solid #e5e5e5;border-radius:8px;overflow:hidden"><h3 style="margin:0 0 12px;font-size:18px;font-weight:600"><a href="/blog/{{slug}}" style="color:#667eea;text-decoration:none">{{title}}</a></h3><p style="margin:0 0 16px;color:#666;font-size:14px;line-height:1.5">{{excerpt}}</p><a href="/blog/{{slug}}" style="color:#667eea;text-decoration:none;font-weight:500;font-size:14px">Read more →</a></article>{{/each}}</div>',
+  },
+  {
+    id: "aska-loop-posts-list",
+    label: "Posts - List",
+    category: "Blog Loops",
     icon: "list",
-    content: '<div data-aska-loop="posts">{{#each posts}}<article style="margin-bottom:24px;padding:24px;border:1px solid #e5e5e5;border-radius:8px"><h3 style="margin:0 0 8px"><a href="/blog/{{slug}}" style="color:#667eea;text-decoration:none">{{title}}</a></h3><p style="margin:0;color:#666">{{excerpt}}</p></article>{{/each}}</div>',
+    content: '<div data-aska-loop="posts" data-layout="list" style="max-width:800px">{{#each posts}}<article style="margin-bottom:32px;padding-bottom:32px;border-bottom:1px solid #e5e5e5"><h2 style="margin:0 0 8px;font-size:24px"><a href="/blog/{{slug}}" style="color:#667eea;text-decoration:none">{{title}}</a></h2><p style="margin:0 0 4px;color:#999;font-size:14px">{{publishedAt}}</p><p style="margin:0 0 16px;color:#666;line-height:1.6">{{excerpt}}</p><a href="/blog/{{slug}}" style="color:#667eea;text-decoration:none;font-weight:500">Read more →</a></article>{{/each}}</div>',
+  },
+  {
+    id: "aska-loop-posts-masonry",
+    label: "Posts - Masonry Grid",
+    category: "Blog Loops",
+    icon: "grid",
+    content: '<div data-aska-loop="posts" data-layout="masonry" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;grid-auto-rows:max-content">{{#each posts}}<article style="padding:24px;border:1px solid #e5e5e5;border-radius:8px"><h3 style="margin:0 0 12px;font-size:18px"><a href="/blog/{{slug}}" style="color:#667eea;text-decoration:none">{{title}}</a></h3><p style="margin:0 0 16px;color:#666;font-size:14px">{{excerpt}}</p><a href="/blog/{{slug}}" style="color:#667eea;text-decoration:none;font-weight:500;font-size:14px">Read more →</a></article>{{/each}}</div>',
   },
   {
     id: "aska-loop-products",
-    label: "Products loop",
-    category: "Loops",
+    label: "Products - Grid (3 cols)",
+    category: "Product Loops",
     icon: "grid",
-    content: '<div data-aska-loop="products" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">{{#each products}}<div style="padding:24px;border:1px solid #e5e5e5;border-radius:8px;text-align:center"><h3 style="margin:0 0 8px">{{name}}</h3><p style="font-size:24px;font-weight:700;color:#667eea;margin:0 0 16px">{{price}}</p><button style="padding:8px 16px;background:#667eea;color:#fff;border:none;border-radius:4px;cursor:pointer">Add to cart</button></div>{{/each}}</div>',
+    content: '<div data-aska-loop="products" data-layout="grid" data-cols="3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">{{#each products}}<div style="padding:24px;border:1px solid #e5e5e5;border-radius:8px;text-align:center"><h3 style="margin:0 0 8px;font-size:18px">{{name}}</h3><p style="font-size:24px;font-weight:700;color:#667eea;margin:0 0 16px">${{price}}</p><button style="padding:8px 16px;background:#667eea;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:500">Add to cart</button></div>{{/each}}</div>',
+  },
+  {
+    id: "aska-loop-products-2col",
+    label: "Products - Grid (2 cols)",
+    category: "Product Loops",
+    icon: "grid",
+    content: '<div data-aska-loop="products" data-layout="grid" data-cols="2" style="display:grid;grid-template-columns:repeat(2,1fr);gap:24px">{{#each products}}<div style="padding:24px;border:1px solid #e5e5e5;border-radius:8px"><h3 style="margin:0 0 12px;font-size:18px">{{name}}</h3><p style="font-size:24px;font-weight:700;color:#667eea;margin:0 0 16px">${{price}}</p><button style="padding:8px 16px;background:#667eea;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:500">Add to cart</button></div>{{/each}}</div>',
   },
 ];
 
