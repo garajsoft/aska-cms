@@ -56,21 +56,14 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URI || "" },
-    push: true,
+    // push (dev-only schema sync) must stay off in production: it diffs the
+    // live DB against this config and non-interactively resolves ambiguous
+    // changes as drop-and-recreate, deleting data in any column/table it
+    // decides no longer matches. Real schema changes go through
+    // `payload migrate:create` + `payload migrate` instead.
+    push: process.env.NODE_ENV !== "production",
   }),
   sharp,
-  onInit: async (payload) => {
-    if (process.env.NODE_ENV === "production") {
-      try {
-        const { pushDevSchema } = await import("@payloadcms/drizzle");
-        // @ts-expect-error payload.db is the drizzle adapter; type not re-exported
-        await pushDevSchema(payload.db);
-        payload.logger.info("Payload schema pushed to Postgres");
-      } catch (err) {
-        payload.logger.error({ err }, "Schema push failed");
-      }
-    }
-  },
   plugins: [
     ecommercePlugin({
       access: {
