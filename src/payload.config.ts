@@ -62,24 +62,6 @@ export default buildConfig({
   onInit: async (payload) => {
     if (process.env.NODE_ENV === "production") {
       try {
-        // One-time cleanup: reset the public schema so drizzle push doesn't
-        // hit interactive rename prompts (no TTY in the container = boot
-        // hangs forever). Guarded by RESET_SCHEMA_ON_BOOT=1 env — set it,
-        // deploy, watch it boot clean, then unset it.
-        // ponytail: destroys ALL data; only run on empty/dev environments.
-        if (process.env.RESET_SCHEMA_ON_BOOT === "1") {
-          const drizzle = (
-            payload.db as { drizzle?: { execute: (q: unknown) => Promise<unknown> } }
-          ).drizzle;
-          if (drizzle) {
-            const { sql } = await import("drizzle-orm");
-            payload.logger.warn("RESET_SCHEMA_ON_BOOT=1 — dropping public schema");
-            await drizzle.execute(
-              sql.raw("DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;")
-            );
-          }
-        }
-
         const { pushDevSchema } = await import("@payloadcms/drizzle");
         // @ts-expect-error payload.db is the drizzle adapter; type not re-exported
         await pushDevSchema(payload.db);
