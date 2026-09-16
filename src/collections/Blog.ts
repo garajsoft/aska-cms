@@ -50,8 +50,15 @@ export const Blog: CollectionConfig = {
                     type: "text",
                     label: "Width",
                     admin: {
-                      description:
-                        "CSS width — e.g. 100%, 400px, 50vw. Drag image to resize.",
+                      description: "CSS width — e.g. 100%, 400px, 600px. Drag bottom-right corner to resize.",
+                    },
+                  },
+                  {
+                    name: "height",
+                    type: "text",
+                    label: "Height",
+                    admin: {
+                      description: "CSS height — e.g. auto, 300px. Leave auto to maintain aspect ratio.",
                     },
                   },
                 ],
