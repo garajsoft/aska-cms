@@ -15,11 +15,19 @@ export function RichTextStyles() {
       if (img.dataset.resizeSetup === "true") return;
       img.dataset.resizeSetup = "true";
 
-      // Style the image for inline positioning
+      // Style the image for inline positioning. Payload's own editor theme
+      // CSS caps upload preview images at a fixed max-width (e.g. 450px) but
+      // leaves max-height uncapped - so once a resize target width exceeded
+      // that cap, the rendered width stayed clamped while height kept
+      // growing from the (uncapped) target width, visually stretching the
+      // image taller instead of wider. Override both caps inline so our
+      // explicit width/height take full effect.
       img.style.display = "inline-block";
       img.style.position = "relative";
       img.style.verticalAlign = "top";
       img.style.cursor = "grab";
+      img.style.maxWidth = "none";
+      img.style.maxHeight = "none";
 
       // Create resize handle
       const handle = document.createElement("div");
