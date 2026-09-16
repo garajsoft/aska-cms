@@ -73,96 +73,28 @@ const COMPONENT_BLOCKS = [
     label: "Hero section",
     category: "Layout",
     icon: "heading",
-    content: `<section style="padding:120px 24px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;text-align:center">
-  <h1 style="font-size:56px;margin:0 0 24px;font-weight:700">Stunning hero section</h1>
-  <p style="font-size:20px;margin:0 0 32px;opacity:0.9">Your compelling value proposition here</p>
-  <button style="padding:12px 32px;background:#fff;color:#667eea;border:none;border-radius:4px;font-weight:600;cursor:pointer">Get started</button>
-</section>`,
+    content: '<section style="padding:120px 24px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;text-align:center"><h1 style="font-size:56px;margin:0 0 24px;font-weight:700">Stunning hero section</h1><p style="font-size:20px;margin:0 0 32px;opacity:0.9">Your compelling value proposition here</p><button style="padding:12px 32px;background:#fff;color:#667eea;border:none;border-radius:4px;font-weight:600;cursor:pointer">Get started</button></section>',
   },
   {
     id: "aska-features",
     label: "Features grid (3 cols)",
     category: "Layout",
     icon: "grid",
-    content: `<section style="padding:64px 24px;max-width:1200px;margin:0 auto">
-  <h2 style="text-align:center;font-size:36px;margin:0 0 48px">Key features</h2>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px">
-    <div style="padding:24px">
-      <h3 style="margin:0 0 12px;font-size:20px">Feature 1</h3>
-      <p style="color:#666;margin:0">Description of your feature goes here</p>
-    </div>
-    <div style="padding:24px">
-      <h3 style="margin:0 0 12px;font-size:20px">Feature 2</h3>
-      <p style="color:#666;margin:0">Description of your feature goes here</p>
-    </div>
-    <div style="padding:24px">
-      <h3 style="margin:0 0 12px;font-size:20px">Feature 3</h3>
-      <p style="color:#666;margin:0">Description of your feature goes here</p>
-    </div>
-  </div>
-</section>`,
+    content: '<section style="padding:64px 24px;max-width:1200px;margin:0 auto"><h2 style="text-align:center;font-size:36px;margin:0 0 48px">Key features</h2><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px"><div style="padding:24px"><h3 style="margin:0 0 12px;font-size:20px">Feature 1</h3><p style="color:#666;margin:0">Description goes here</p></div><div style="padding:24px"><h3 style="margin:0 0 12px;font-size:20px">Feature 2</h3><p style="color:#666;margin:0">Description goes here</p></div><div style="padding:24px"><h3 style="margin:0 0 12px;font-size:20px">Feature 3</h3><p style="color:#666;margin:0">Description goes here</p></div></div></section>',
   },
   {
     id: "aska-cta",
     label: "Call-to-action",
     category: "Layout",
     icon: "button",
-    content: `<section style="padding:64px 24px;background:#f9f9f9;text-align:center">
-  <h2 style="font-size:36px;margin:0 0 16px">Ready to get started?</h2>
-  <p style="color:#666;margin:0 0 24px;font-size:18px">Join thousands of happy users</p>
-  <button style="padding:14px 40px;background:#000;color:#fff;border:none;border-radius:4px;font-weight:600;cursor:pointer;font-size:16px">Start free trial</button>
-</section>`,
+    content: '<section style="padding:64px 24px;background:#f9f9f9;text-align:center"><h2 style="font-size:36px;margin:0 0 16px">Ready to get started?</h2><p style="color:#666;margin:0 0 24px;font-size:18px">Join thousands of happy users</p><button style="padding:14px 40px;background:#000;color:#fff;border:none;border-radius:4px;font-weight:600;cursor:pointer;font-size:16px">Start free trial</button></section>',
   },
   {
     id: "aska-testimonial",
     label: "Testimonial card",
     category: "Layout",
     icon: "quote",
-    content: `<div style="padding:32px;background:#f9f9f9;border-radius:8px;border-left:4px solid #667eea;max-width:600px">
-  <p style="margin:0 0 16px;font-style:italic;font-size:18px">"This product changed how we work. Highly recommended!"</p>
-  <p style="margin:0;font-weight:600">– Jane Doe, CEO at Acme Corp</p>
-</div>`,
-  },
-  {
-    id: "aska-pricing-table",
-    label: "Pricing table",
-    category: "Ecommerce",
-    icon: "table",
-    content: `<section style="padding:64px 24px;max-width:1200px;margin:0 auto">
-  <h2 style="text-align:center;font-size:36px;margin:0 0 48px">Pricing</h2>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
-    <div style="padding:32px;border:1px solid #e5e5e5;border-radius:8px;text-align:center">
-      <h3 style="margin:0 0 8px">Starter</h3>
-      <p style="font-size:32px;margin:0 0 24px;font-weight:700">$29<span style="font-size:16px">/mo</span></p>
-      <button style="width:100%;padding:12px;background:#000;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600">Choose plan</button>
-    </div>
-    <div style="padding:32px;border:2px solid #667eea;border-radius:8px;text-align:center;transform:scale(1.05)">
-      <h3 style="margin:0 0 8px">Professional</h3>
-      <p style="font-size:32px;margin:0 0 24px;font-weight:700">$99<span style="font-size:16px">/mo</span></p>
-      <button style="width:100%;padding:12px;background:#667eea;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600">Choose plan</button>
-    </div>
-    <div style="padding:32px;border:1px solid #e5e5e5;border-radius:8px;text-align:center">
-      <h3 style="margin:0 0 8px">Enterprise</h3>
-      <p style="font-size:32px;margin:0 0 24px;font-weight:700">Custom</p>
-      <button style="width:100%;padding:12px;background:#000;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600">Contact us</button>
-    </div>
-  </div>
-</section>`,
-  },
-  {
-    id: "aska-footer",
-    label: "Footer",
-    category: "Layout",
-    icon: "divider",
-    content: `<footer style="padding:48px 24px;background:#1a1a1a;color:#fff">
-  <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-bottom:32px">
-    <div><h4 style="margin:0 0 12px">Product</h4><ul style="list-style:none;padding:0;margin:0"><li><a href="#" style="color:#ccc;text-decoration:none">Features</a></li><li><a href="#" style="color:#ccc;text-decoration:none">Pricing</a></li></ul></div>
-    <div><h4 style="margin:0 0 12px">Company</h4><ul style="list-style:none;padding:0;margin:0"><li><a href="#" style="color:#ccc;text-decoration:none">About</a></li><li><a href="#" style="color:#ccc;text-decoration:none">Blog</a></li></ul></div>
-    <div><h4 style="margin:0 0 12px">Legal</h4><ul style="list-style:none;padding:0;margin:0"><li><a href="#" style="color:#ccc;text-decoration:none">Privacy</a></li><li><a href="#" style="color:#ccc;text-decoration:none">Terms</a></li></ul></div>
-    <div><h4 style="margin:0 0 12px">Social</h4><ul style="list-style:none;padding:0;margin:0"><li><a href="#" style="color:#ccc;text-decoration:none">Twitter</a></li><li><a href="#" style="color:#ccc;text-decoration:none">LinkedIn</a></li></ul></div>
-  </div>
-  <p style="margin:0;padding-top:24px;border-top:1px solid #333;text-align:center;color:#999">© 2024 Your company. All rights reserved.</p>
-</footer>`,
+    content: '<div style="padding:32px;background:#f9f9f9;border-radius:8px;border-left:4px solid #667eea;max-width:600px"><p style="margin:0 0 16px;font-style:italic;font-size:18px">"This product changed how we work."</p><p style="margin:0;font-weight:600">– Customer Name</p></div>',
   },
 ];
 
@@ -173,29 +105,14 @@ const LOOP_BLOCKS = [
     label: "Posts loop",
     category: "Loops",
     icon: "list",
-    content: `<div data-aska-loop="posts">
-{{#each posts}}
-<article style="margin-bottom:24px;padding:24px;border:1px solid #e5e5e5;border-radius:8px">
-  <h3 style="margin:0 0 8px"><a href="/blog/{{slug}}" style="color:#667eea;text-decoration:none">{{title}}</a></h3>
-  <p style="margin:0;color:#666">{{excerpt}}</p>
-</article>
-{{/each}}
-</div>`,
+    content: '<div data-aska-loop="posts">{{#each posts}}<article style="margin-bottom:24px;padding:24px;border:1px solid #e5e5e5;border-radius:8px"><h3 style="margin:0 0 8px"><a href="/blog/{{slug}}" style="color:#667eea;text-decoration:none">{{title}}</a></h3><p style="margin:0;color:#666">{{excerpt}}</p></article>{{/each}}</div>',
   },
   {
     id: "aska-loop-products",
     label: "Products loop",
     category: "Loops",
     icon: "grid",
-    content: `<div data-aska-loop="products" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
-{{#each products}}
-<div style="padding:24px;border:1px solid #e5e5e5;border-radius:8px;text-align:center">
-  <h3 style="margin:0 0 8px">{{name}}</h3>
-  <p style="font-size:24px;font-weight:700;color:#667eea;margin:0 0 16px">{{price}}</p>
-  <button style="padding:8px 16px;background:#667eea;color:#fff;border:none;border-radius:4px;cursor:pointer">Add to cart</button>
-</div>
-{{/each}}
-</div>`,
+    content: '<div data-aska-loop="products" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">{{#each products}}<div style="padding:24px;border:1px solid #e5e5e5;border-radius:8px;text-align:center"><h3 style="margin:0 0 8px">{{name}}</h3><p style="font-size:24px;font-weight:700;color:#667eea;margin:0 0 16px">{{price}}</p><button style="padding:8px 16px;background:#667eea;color:#fff;border:none;border-radius:4px;cursor:pointer">Add to cart</button></div>{{/each}}</div>',
   },
 ];
 
