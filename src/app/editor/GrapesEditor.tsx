@@ -226,6 +226,29 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
         .gjs-block { background: white; border: 1px solid #e0e6ed; }
         .gjs-block:hover { background: #f0f4ff; }
         .gjs-category-title { background: #e8ecf7; color: #667eea; }
+
+        /* Make sidebar always visible on scroll */
+        .gjs-right-panel {
+          position: absolute !important;
+          right: 0;
+          top: 0;
+          height: 100vh;
+          overflow-y: auto;
+          z-index: 10;
+        }
+
+        .gjs-left-panel {
+          position: absolute !important;
+          left: 0;
+          top: 0;
+          height: 100vh;
+          overflow-y: auto;
+          z-index: 10;
+        }
+
+        .gjs-editor-row {
+          overflow: hidden;
+        }
       `;
       document.head.appendChild(stylesheet);
 
