@@ -24,7 +24,7 @@ async function seed() {
   }
 
   // Landing page HTML
-  const landingHtml = `<div style="max-width: 1200px; margin: 0 auto; padding: 60px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  const landingHtml = `<div style="background: #ffffff; min-height: 100vh; max-width: 1200px; margin: 0 auto; padding: 60px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
   <header style="margin-bottom: 80px; text-align: center;">
     <h1 style="font-size: 48px; font-weight: 700; margin: 0 0 16px; color: #000;">åska CMS</h1>
     <p style="font-size: 18px; color: #666; margin: 0; max-width: 600px; margin-left: auto; margin-right: auto;">A lightweight, open-source CMS built for modern web teams. Visual page builder, Stripe ecommerce, and headless content API included.</p>
