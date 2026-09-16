@@ -4,160 +4,188 @@ import { useEffect } from "react";
 
 export function RichTextStyles() {
   useEffect(() => {
-    // Setup resize functionality for all images
-    const setupImageResize = () => {
-      const editor = document.querySelector("[data-lexical-editor]");
-      if (!editor) return;
+    let resizingImg: HTMLImageElement | null = null;
+    let startX = 0;
+    let startY = 0;
+    let startWidth = 0;
+    let startHeight = 0;
 
-      const images = editor.querySelectorAll("img:not(.resizable-setup)");
-      images.forEach((img: any) => {
-        if (img.style.display === "none" || img.classList.contains("resizable-setup")) return;
+    // Setup resize on image
+    const setupImageResize = (img: HTMLImageElement) => {
+      if (img.dataset.resizeSetup === "true") return;
+      img.dataset.resizeSetup = "true";
 
-        img.classList.add("resizable-setup");
+      // Style the image for inline positioning
+      img.style.display = "inline-block";
+      img.style.position = "relative";
+      img.style.verticalAlign = "top";
+      img.style.cursor = "grab";
 
-        // Create wrapper
-        const wrapper = document.createElement("div");
-        wrapper.className = "lexical-image-wrapper";
-        wrapper.style.position = "relative";
-        wrapper.style.display = "inline-block";
-        wrapper.style.margin = "0";
+      // Create resize handle
+      const handle = document.createElement("div");
+      handle.className = "image-resize-handle";
+      handle.title = "Drag to resize (maintains aspect ratio)";
 
-        img.parentElement?.insertBefore(wrapper, img);
-        wrapper.appendChild(img);
+      img.parentElement?.insertBefore(handle, img.nextSibling);
 
-        // Create and add visible resize handle
-        const handle = document.createElement("div");
-        handle.className = "resize-handle";
-        handle.setAttribute("data-resize-handle", "true");
-        wrapper.appendChild(handle);
-
-        // Resize logic
-        let isResizing = false;
-        let startX = 0;
-        let startY = 0;
-        let startWidth = 0;
-        let startHeight = 0;
-
-        const onMouseDown = (e: MouseEvent) => {
-          if (e.target !== handle) return;
-          isResizing = true;
-          startX = e.clientX;
-          startY = e.clientY;
-          startWidth = img.offsetWidth;
-          startHeight = img.offsetHeight;
-          document.body.style.cursor = "se-resize";
-          e.preventDefault();
-          e.stopPropagation();
-        };
-
-        const onMouseMove = (e: MouseEvent) => {
-          if (!isResizing) return;
-          const deltaX = e.clientX - startX;
-          const newWidth = Math.max(100, startWidth + deltaX);
-          const aspectRatio = startHeight / startWidth;
-          const newHeight = newWidth * aspectRatio;
-          img.style.width = newWidth + "px";
-          img.style.height = newHeight + "px";
-        };
-
-        const onMouseUp = () => {
-          if (isResizing) {
-            isResizing = false;
-            document.body.style.cursor = "auto";
-          }
-        };
-
-        handle.addEventListener("mousedown", onMouseDown);
-        document.addEventListener("mousemove", onMouseMove);
-        document.addEventListener("mouseup", onMouseUp);
+      // Handle mousedown event on handle
+      handle.addEventListener("mousedown", (e: MouseEvent) => {
+        resizingImg = img;
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = img.offsetWidth || img.width || 400;
+        startHeight = img.offsetHeight || img.height || 300;
+        document.body.style.userSelect = "none";
+        document.body.style.cursor = "se-resize";
+        e.preventDefault();
+        e.stopPropagation();
       });
     };
 
-    // Initial setup
-    setupImageResize();
+    // Find all images in editor and setup
+    const findAndSetupImages = () => {
+      const editors = [
+        document.querySelector("[data-lexical-editor]"),
+        document.querySelector(".lexical-editor"),
+        document.querySelector(".payload-richtext"),
+        document.querySelector("[contenteditable]"),
+      ].filter(Boolean);
 
-    // Watch for new images added to editor
-    const editor = document.querySelector("[data-lexical-editor]");
-    if (editor) {
-      const observer = new MutationObserver(() => {
-        setupImageResize();
+      editors.forEach((editor) => {
+        if (!editor) return;
+        editor.querySelectorAll("img").forEach((img: any) => {
+          if (img.offsetWidth > 0) {
+            setupImageResize(img);
+          }
+        });
       });
-      observer.observe(editor, { childList: true, subtree: true });
-      return () => observer.disconnect();
-    }
+    };
+
+    // Global mouse move handler
+    const onMouseMove = (e: MouseEvent) => {
+      if (!resizingImg) return;
+
+      const deltaX = e.clientX - startX;
+      const newWidth = Math.max(60, startWidth + deltaX);
+      const aspectRatio = startHeight / startWidth;
+      const newHeight = newWidth * aspectRatio;
+
+      resizingImg.style.width = newWidth + "px";
+      resizingImg.style.height = newHeight + "px";
+    };
+
+    // Global mouse up handler
+    const onMouseUp = () => {
+      if (resizingImg) {
+        resizingImg.style.cursor = "grab";
+        resizingImg = null;
+      }
+      document.body.style.userSelect = "auto";
+      document.body.style.cursor = "auto";
+    };
+
+    // Attach global event listeners
+    document.addEventListener("mousemove", onMouseMove, true);
+    document.addEventListener("mouseup", onMouseUp, true);
+
+    // Initial setup
+    findAndSetupImages();
+
+    // Watch for content changes
+    const observer = new MutationObserver(() => {
+      findAndSetupImages();
+    });
+
+    // Observe multiple possible locations
+    const targets = [
+      document.querySelector("[data-lexical-editor]"),
+      document.querySelector(".lexical-editor"),
+      document.querySelector(".payload-richtext"),
+      document.body,
+    ].filter(Boolean) as Element[];
+
+    targets.forEach((target) => {
+      observer.observe(target, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+        characterData: false,
+      });
+    });
+
+    // Cleanup
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("mousemove", onMouseMove, true);
+      document.removeEventListener("mouseup", onMouseUp, true);
+    };
   }, []);
 
   return (
     <style>{`
-      /* Lexical editor image styling */
-      [data-lexical-editor] img.resizable-setup {
-        max-width: 100%;
-        height: auto;
-        user-select: none;
-      }
-
-      /* Image wrapper with resize handle */
-      .lexical-image-wrapper {
-        position: relative !important;
-        display: inline-block !important;
-        margin: 0 !important;
-      }
-
-      .lexical-image-wrapper:hover {
-        outline: 2px dashed #667eea;
-        outline-offset: 2px;
-      }
-
-      /* Resize handle - always visible on hover */
-      .resize-handle {
+      /* Image resize handle */
+      .image-resize-handle {
         position: absolute;
-        bottom: -8px;
-        right: -8px;
-        width: 28px;
-        height: 28px;
+        bottom: -12px;
+        right: -12px;
+        width: 32px;
+        height: 32px;
         background: #667eea;
+        border: 2px solid white;
         border-radius: 4px;
         cursor: se-resize;
-        opacity: 0;
-        transition: opacity 0.15s ease;
-        pointer-events: auto;
-        z-index: 100;
+        z-index: 1000;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 2px solid white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        user-select: none;
+        pointer-events: auto;
       }
 
-      .resize-handle::after {
+      .image-resize-handle::after {
         content: '↘';
         color: white;
-        font-size: 16px;
+        font-size: 18px;
         font-weight: bold;
         line-height: 1;
       }
 
-      .lexical-image-wrapper:hover .resize-handle {
-        opacity: 1;
+      .image-resize-handle:hover {
+        background: #5568d3;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
       }
 
-      .resize-handle:active {
-        background: #5568d3;
-        opacity: 1;
+      .image-resize-handle:active {
+        background: #4a57c2;
+      }
+
+      /* Image hover state */
+      [data-lexical-editor] img:hover,
+      .lexical-editor img:hover,
+      .payload-richtext img:hover {
+        outline: 2px dashed #667eea;
+        outline-offset: 2px;
       }
 
       /* Lexical figure elements */
-      [data-lexical-editor] figure {
+      [data-lexical-editor] figure,
+      .lexical-editor figure,
+      .payload-richtext figure {
         margin: 1em 0;
         position: relative;
       }
 
-      [data-lexical-editor] figure img {
+      [data-lexical-editor] figure img,
+      .lexical-editor figure img,
+      .payload-richtext figure img {
         max-width: 100%;
         height: auto;
       }
 
-      [data-lexical-editor] figcaption {
+      [data-lexical-editor] figcaption,
+      .lexical-editor figcaption,
+      .payload-richtext figcaption {
         font-size: 0.9em;
         color: #666;
         margin-top: 0.5em;
