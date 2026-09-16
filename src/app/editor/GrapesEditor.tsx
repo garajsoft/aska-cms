@@ -228,25 +228,29 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
         .gjs-category-title { background: #e8ecf7; color: #667eea; }
 
         /* Make sidebar always visible on scroll */
+        .gjs-editor-row {
+          position: relative;
+          display: flex;
+        }
+
+        .gjs-left-panel,
         .gjs-right-panel {
-          position: absolute !important;
-          right: 0;
-          top: 0;
-          height: 100vh;
+          position: sticky !important;
+          top: 0 !important;
+          height: calc(100vh - 44px);
           overflow-y: auto;
+          overflow-x: hidden;
+          flex-shrink: 0;
           z-index: 10;
         }
 
         .gjs-left-panel {
-          position: absolute !important;
-          left: 0;
-          top: 0;
-          height: 100vh;
-          overflow-y: auto;
-          z-index: 10;
+          order: -1;
         }
 
-        .gjs-editor-row {
+        .gjs-middle-panel,
+        .gjs-frame {
+          flex: 1;
           overflow: hidden;
         }
       `;
