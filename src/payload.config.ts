@@ -13,6 +13,7 @@ import { Blog } from "./collections/Blog";
 import { Users } from "./collections/Users";
 import { Media } from "./collections/Media";
 import { Templates } from "./collections/Templates";
+import { Examples } from "./collections/Examples";
 import { Settings } from "./globals/Settings";
 
 const filename = fileURLToPath(import.meta.url);
@@ -49,7 +50,7 @@ export default buildConfig({
       ],
     },
   },
-  collections: [Pages, Blog, Templates, Users, Media],
+  collections: [Pages, Blog, Templates, Examples, Users, Media],
   globals: [Settings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",

@@ -147,20 +147,56 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [
-        { default: grapesjs },
-        { default: presetWebpage },
-        { default: blocksBasic },
-        { default: forms },
-      ] = await Promise.all([
+      const modules = await Promise.all([
         import("grapesjs"),
         import("grapesjs-preset-webpage"),
         import("grapesjs-blocks-basic"),
+        import("grapesjs-blocks-flexbox"),
         import("grapesjs-plugin-forms"),
-      ]);
+        import("grapesjs-plugin-export"),
+        import("grapesjs-component-countdown"),
+        import("grapesjs-navbar"),
+        import("grapesjs-tabs"),
+        import("grapesjs-tooltip"),
+        import("grapesjs-style-gradient"),
+        import("grapesjs-lory"),
+        import("grapesjs-preset-newsletter"),
+      ].map(p => p.catch(() => ({ default: null }))));
+
+      const [
+        grapesjs,
+        presetWebpage,
+        blocksBasic,
+        blocksFlex,
+        forms,
+        pluginExport,
+        countdown,
+        navbar,
+        tabs,
+        tooltip,
+        gradient,
+        lory,
+        newsletter,
+      ] = modules.map(m => m.default);
+
       if (cancelled || !containerRef.current) return;
 
-      const editor = grapesjs.init({
+      const plugins = [
+        presetWebpage,
+        blocksBasic,
+        blocksFlex,
+        forms,
+        pluginExport,
+        countdown,
+        navbar,
+        tabs,
+        tooltip,
+        gradient,
+        lory,
+        newsletter,
+      ].filter(Boolean);
+
+      const editor = grapesjs.default.init({
         container: containerRef.current,
         height: "calc(100vh - 44px)",
         width: "auto",
@@ -172,8 +208,12 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
             target.mode === "page" ? target.title : target.name
           }</h1></section>`,
         style: initial.css || "",
-        plugins: [presetWebpage, blocksBasic, forms],
-        pluginsOpts: { "grapesjs-blocks-basic": { flexGrid: true } },
+        plugins: plugins,
+        pluginsOpts: {
+          "grapesjs-blocks-basic": { flexGrid: true },
+          "grapesjs-preset-newsletter": {},
+          "grapesjs-plugin-export": {},
+        },
       });
 
       // Custom CSS for white/blue theme (lightweight)
