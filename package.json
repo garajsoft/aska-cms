@@ -7,7 +7,8 @@
     "build": "next build",
     "generate:importmap": "payload generate:importmap",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:landing": "tsx scripts/seed-landing.ts"
   },
   "engines": {
     "node": "22.x"
