@@ -20,6 +20,18 @@ export function RichTextStyles() {
     // Setup resize on image
     const setupImageResize = (img: HTMLImageElement) => {
       if (img.dataset.resizeSetup === "true") return;
+
+      // Payload reserves layout space (and offsetWidth) from stored upload
+      // metadata before the actual image bytes finish downloading, so
+      // naturalWidth/naturalHeight can still be 0 here for a real, larger
+      // photo even though the element already has a nonzero size. Resizing
+      // before decode finishes would have no reliable source for the true
+      // aspect ratio at all. Defer the whole setup until the browser has
+      // actually decoded it.
+      if (!img.complete || !img.naturalWidth) {
+        img.addEventListener("load", () => setupImageResize(img), { once: true });
+        return;
+      }
       img.dataset.resizeSetup = "true";
 
       // Style the image for inline positioning. Payload's own editor theme
@@ -53,15 +65,13 @@ export function RichTextStyles() {
         startX = e.clientX;
         startY = e.clientY;
         startWidth = img.offsetWidth || img.width || 400;
-        // Lock the ratio to the image's true intrinsic dimensions, not its
-        // current rendered (integer-rounded) size - deriving it from
+        // Lock the ratio to the image's true intrinsic dimensions (guaranteed
+        // decoded by now, see the load-event guard in setupImageResize), not
+        // its current rendered (integer-rounded) size - deriving it from
         // offsetWidth/offsetHeight every drag let rounding drift compound
         // across repeated resizes, especially once clamped at the minimum
         // width, so the image slowly stopped matching its original shape.
-        resizeAspectRatio =
-          img.naturalWidth && img.naturalHeight
-            ? img.naturalHeight / img.naturalWidth
-            : (img.offsetHeight || img.height || 300) / startWidth;
+        resizeAspectRatio = img.naturalHeight / img.naturalWidth;
         document.body.style.userSelect = "none";
         document.body.style.cursor = "se-resize";
         e.preventDefault();
