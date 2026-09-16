@@ -147,17 +147,16 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [grapesjs, presetWebpage, blocksBasic, forms, pluginExport] = await Promise.all([
+      const [grapesjs, presetWebpage, blocksBasic, forms] = await Promise.all([
         import("grapesjs"),
         import("grapesjs-preset-webpage"),
         import("grapesjs-blocks-basic"),
         import("grapesjs-plugin-forms"),
-        import("grapesjs-plugin-export"),
       ]).then(mods => mods.map(m => m.default));
 
       if (cancelled || !containerRef.current) return;
 
-      const plugins = [presetWebpage, blocksBasic, forms, pluginExport];
+      const plugins = [presetWebpage, blocksBasic, forms];
 
       const editor = grapesjs.default.init({
         container: containerRef.current,
@@ -174,8 +173,6 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
         plugins: plugins,
         pluginsOpts: {
           "grapesjs-blocks-basic": { flexGrid: true },
-          "grapesjs-preset-newsletter": {},
-          "grapesjs-plugin-export": {},
         },
       });
 
