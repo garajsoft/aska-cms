@@ -191,7 +191,7 @@ const LOOP_BLOCKS = [
 {{#each products}}
 <div style="padding:24px;border:1px solid #e5e5e5;border-radius:8px;text-align:center">
   <h3 style="margin:0 0 8px">{{name}}</h3>
-  <p style="font-size:24px;font-weight:700;color:#667eea;margin:0 0 16px">${{price}}</p>
+  <p style="font-size:24px;font-weight:700;color:#667eea;margin:0 0 16px">{{price}}</p>
   <button style="padding:8px 16px;background:#667eea;color:#fff;border:none;border-radius:4px;cursor:pointer">Add to cart</button>
 </div>
 {{/each}}
@@ -259,24 +259,12 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
         pluginsOpts: { "grapesjs-blocks-basic": { flexGrid: true } },
       });
 
-      // Custom CSS for white/blue theme
+      // Custom CSS for white/blue theme (lightweight)
       const stylesheet = document.createElement("style");
       stylesheet.textContent = `
-        .gjs-pn-panel { background: #f8f9fa; }
-        .gjs-pn-buttons { background: #f8f9fa; border-bottom: 1px solid #e0e6ed; }
-        .gjs-pn-buttons button { color: #667eea; }
-        .gjs-pn-buttons button.gjs-pn-active { background: #667eea; color: white; }
-        .gjs-block { background: white; border: 1px solid #e0e6ed; color: #333; }
-        .gjs-block:hover { background: #f0f4ff; border-color: #667eea; }
-        .gjs-block svg { width: 24px; height: 24px; color: #667eea; }
-        .gjs-layer-title { color: #333; }
-        .gjs-panel { background: #f8f9fa; border-color: #e0e6ed; }
-        .gjs-panel-devices { background: white; border-bottom: 1px solid #e0e6ed; }
-        .gjs-blocks-c { padding: 8px; }
-        .gjs-block-label { font-size: 12px; font-weight: 500; color: #333; }
-        .gjs-category-title { background: #e8ecf7; color: #667eea; font-weight: 600; padding: 8px 12px; }
-        .gjs-button { background: #667eea; color: white; }
-        .gjs-button:hover { background: #5568d3; }
+        .gjs-block { background: white; border: 1px solid #e0e6ed; }
+        .gjs-block:hover { background: #f0f4ff; }
+        .gjs-category-title { background: #e8ecf7; color: #667eea; }
       `;
       document.head.appendChild(stylesheet);
 
