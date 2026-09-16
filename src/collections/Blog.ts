@@ -31,7 +31,7 @@ export const Blog: CollectionConfig = {
       required: true,
       admin: {
         description:
-          "Write the blog post body here. Use the toolbar or slash menu to format text and insert images.",
+          "Write the blog post body here. Use the toolbar or slash menu to format text and insert images. Drag image corners to resize.",
       },
       editor: lexicalEditor({
         features: ({ defaultFeatures }) => [
@@ -43,7 +43,7 @@ export const Blog: CollectionConfig = {
             collections: {
               media: {
                 fields: [
-                  { name: "alt", type: "text", label: "Alt text" },
+                  { name: "alt", type: "text", label: "Alt text", required: true },
                   { name: "caption", type: "text", label: "Caption" },
                   {
                     name: "width",
@@ -51,7 +51,7 @@ export const Blog: CollectionConfig = {
                     label: "Width",
                     admin: {
                       description:
-                        "CSS width — e.g. 100%, 400px, 50vw. (Drag-to-resize planned.)",
+                        "CSS width — e.g. 100%, 400px, 50vw. Drag image to resize.",
                     },
                   },
                 ],
@@ -104,6 +104,54 @@ export const Blog: CollectionConfig = {
       type: "upload",
       relationTo: "media",
       admin: { position: "sidebar", description: "Social share image." },
+    },
+    {
+      name: "category",
+      type: "select",
+      options: [
+        { label: "Technology", value: "technology" },
+        { label: "Business", value: "business" },
+        { label: "Design", value: "design" },
+        { label: "Marketing", value: "marketing" },
+        { label: "Engineering", value: "engineering" },
+        { label: "Culture", value: "culture" },
+        { label: "Other", value: "other" },
+      ],
+      admin: { position: "sidebar" },
+    },
+    {
+      name: "tags",
+      type: "array",
+      admin: { position: "sidebar", description: "Search and filtering tags." },
+      fields: [
+        { name: "tag", type: "text", required: true },
+      ],
+    },
+    {
+      name: "featured",
+      type: "checkbox",
+      defaultValue: false,
+      admin: { position: "sidebar", description: "Show on homepage and featured sections." },
+    },
+    {
+      name: "readingTime",
+      type: "number",
+      admin: {
+        position: "sidebar",
+        description: "Estimated minutes to read (auto-calculate based on word count).",
+        readOnly: true,
+      },
+    },
+    {
+      name: "metaTitle",
+      type: "text",
+      maxLength: 60,
+      admin: { position: "sidebar", description: "SEO page title (60 chars max)." },
+    },
+    {
+      name: "keywords",
+      type: "textarea",
+      admin: { position: "sidebar", description: "SEO keywords (comma-separated)." },
     },
   ],
 };

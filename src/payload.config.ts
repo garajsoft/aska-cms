@@ -46,6 +46,7 @@ export default buildConfig({
       },
       beforeDashboard: [
         "@/components/admin/dashboard/AskaDashboard#AskaDashboard",
+        "@/components/admin/RichTextStyles#RichTextStyles",
       ],
     },
   },
