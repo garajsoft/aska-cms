@@ -2,23 +2,20 @@
 
 ## GrapesJS Plugins Loaded
 
-All available GrapesJS plugins are now enabled to unlock maximum design flexibility:
+Core plugins enabled for robust page building:
 
-### Core Plugins
+### Included Plugins
 - **grapesjs-preset-webpage** — Full webpage builder foundation
 - **grapesjs-blocks-basic** — Standard HTML blocks (text, images, dividers, etc.)
-- **grapesjs-blocks-flexbox** — Flexbox layout components
 - **grapesjs-plugin-forms** — Form elements and validation
-
-### Advanced Features
-- **grapesjs-component-countdown** — Countdown timer components
-- **grapesjs-navbar** — Navigation bar builder
-- **grapesjs-tabs** — Tab interface components
-- **grapesjs-tooltip** — Tooltip/help text blocks
-- **grapesjs-style-gradient** — Gradient editor for backgrounds
-- **grapesjs-lory** — Carousel/slider components
-- **grapesjs-preset-newsletter** — Email template components
 - **grapesjs-plugin-export** — Export designs to HTML/CSS
+
+**Total Features:**
+- 13+ block types (text, button, image, grid, video, form, etc.)
+- Responsive editing
+- Code view & CSS editor
+- HTML/CSS export
+- Full GrapesJS core functionality
 
 **Available in Editor at:** `/editor?slug=pagename`
 
