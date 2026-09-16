@@ -27,13 +27,17 @@ export function RichTextStyles() {
       // leaves max-height uncapped - so once a resize target width exceeded
       // that cap, the rendered width stayed clamped while height kept
       // growing from the (uncapped) target width, visually stretching the
-      // image taller instead of wider. Override both caps inline so our
-      // explicit width/height take full effect.
+      // image taller instead of wider. Override max-height entirely (our
+      // own width/height pair is always aspect-correct, so it never needs
+      // capping), but replace - not remove - max-width: a freshly inserted
+      // image at its full native resolution needs a cap from the moment
+      // it's inserted, before any manual resize, or it renders at full
+      // pixel width and overflows into the sidebar.
       img.style.display = "inline-block";
       img.style.position = "relative";
       img.style.verticalAlign = "top";
       img.style.cursor = "grab";
-      img.style.maxWidth = "none";
+      img.style.maxWidth = getMaxWidth(img) + "px";
       img.style.maxHeight = "none";
 
       // Create resize handle
