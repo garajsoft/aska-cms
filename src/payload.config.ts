@@ -154,13 +154,149 @@ export default buildConfig({
                 hasMany: true,
               },
               {
-                name: "price",
-                type: "number",
-                min: 0,
-                admin: {
-                  description:
-                    "In the site's default currency — set under Settings → Currencies.",
-                },
+                type: "tabs",
+                tabs: [
+                  {
+                    label: "Pricing & Inventory",
+                    fields: [
+                      {
+                        name: "price",
+                        type: "number",
+                        required: true,
+                        min: 0,
+                        admin: {
+                          description:
+                            "In the site's default currency — set under Settings → Currencies.",
+                        },
+                      },
+                      {
+                        name: "cost",
+                        type: "number",
+                        min: 0,
+                        admin: { description: "Cost to your business (for profit calculation)." },
+                      },
+                      {
+                        name: "salePrice",
+                        type: "number",
+                        min: 0,
+                        admin: { description: "Discounted price if on sale. Leave empty for regular price." },
+                      },
+                      {
+                        name: "featured",
+                        type: "checkbox",
+                        defaultValue: false,
+                        admin: { description: "Show on homepage and featured sections." },
+                      },
+                    ],
+                  },
+                  {
+                    label: "Organization",
+                    fields: [
+                      {
+                        name: "category",
+                        type: "select",
+                        options: [
+                          { label: "Electronics", value: "electronics" },
+                          { label: "Clothing", value: "clothing" },
+                          { label: "Books", value: "books" },
+                          { label: "Home & Garden", value: "home" },
+                          { label: "Sports", value: "sports" },
+                          { label: "Other", value: "other" },
+                        ],
+                        admin: { description: "Product category." },
+                      },
+                      {
+                        name: "tags",
+                        type: "array",
+                        fields: [
+                          { name: "tag", type: "text", required: true },
+                        ],
+                        admin: { description: "Search and filtering tags." },
+                      },
+                      {
+                        name: "relatedProducts",
+                        type: "relationship",
+                        relationTo: "products",
+                        hasMany: true,
+                        admin: { description: "Products to show as recommendations." },
+                      },
+                    ],
+                  },
+                  {
+                    label: "Details",
+                    fields: [
+                      {
+                        name: "sku",
+                        type: "text",
+                        unique: true,
+                        admin: { description: "Stock keeping unit (must be unique)." },
+                      },
+                      {
+                        type: "group",
+                        name: "dimensions",
+                        label: "Dimensions & Weight",
+                        fields: [
+                          { name: "length", type: "number", admin: { description: "cm" } },
+                          { name: "width", type: "number", admin: { description: "cm" } },
+                          { name: "height", type: "number", admin: { description: "cm" } },
+                          { name: "weight", type: "number", admin: { description: "kg" } },
+                        ],
+                      },
+                      {
+                        name: "material",
+                        type: "text",
+                        admin: { description: "Primary material or composition." },
+                      },
+                      {
+                        name: "color",
+                        type: "text",
+                        admin: { description: "Color or available colors." },
+                      },
+                    ],
+                  },
+                  {
+                    label: "SEO",
+                    fields: [
+                      {
+                        name: "metaTitle",
+                        type: "text",
+                        maxLength: 60,
+                        admin: { description: "Search result title (60 chars max)." },
+                      },
+                      {
+                        name: "metaDescription",
+                        type: "textarea",
+                        maxLength: 160,
+                        admin: { description: "Search result description (160 chars max)." },
+                      },
+                      {
+                        name: "keywords",
+                        type: "textarea",
+                        admin: { description: "Comma-separated keywords for search." },
+                      },
+                    ],
+                  },
+                  {
+                    label: "Supplier",
+                    fields: [
+                      {
+                        name: "supplier",
+                        type: "text",
+                        admin: { description: "Supplier or vendor name." },
+                      },
+                      {
+                        name: "supplierSku",
+                        type: "text",
+                        admin: { description: "Supplier's product code." },
+                      },
+                      {
+                        name: "leadTime",
+                        type: "number",
+                        admin: { description: "Days to reorder from supplier." },
+                      },
+                    ],
+                  },
+                ],
               },
               ...fields,
             ],
