@@ -202,7 +202,7 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
 
       const plugins = [presetWebpage, blocksBasic, forms];
 
-      const editor = grapesjs.default.init({
+      const editor = grapesjs.init({
         container: containerRef.current,
         height: "calc(100vh - 44px)",
         width: "auto",
