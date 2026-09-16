@@ -2,6 +2,13 @@
 
 import { useEffect } from "react";
 
+// The resize handle is 32px square and sits 12px outside the image edges,
+// so it overlaps the image by ~20px on each side. Below this width the
+// handle visually swallows most of the image (e.g. at the old 60px floor it
+// covered a third of the width and half the height), making a correctly
+// proportioned image look broken even though its actual box math is fine.
+const MIN_RESIZE_WIDTH = 120;
+
 export function RichTextStyles() {
   useEffect(() => {
     let resizingImg: HTMLImageElement | null = null;
@@ -86,7 +93,7 @@ export function RichTextStyles() {
       if (!container) return Infinity;
       const style = getComputedStyle(container);
       const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
-      return Math.max(60, container.clientWidth - padding);
+      return Math.max(MIN_RESIZE_WIDTH, container.clientWidth - padding);
     };
 
     // Global mouse move handler
@@ -95,7 +102,7 @@ export function RichTextStyles() {
 
       const deltaX = e.clientX - startX;
       const maxWidth = getMaxWidth(resizingImg);
-      const newWidth = Math.min(maxWidth, Math.max(60, startWidth + deltaX));
+      const newWidth = Math.min(maxWidth, Math.max(MIN_RESIZE_WIDTH, startWidth + deltaX));
       const newHeight = newWidth * resizeAspectRatio;
 
       resizingImg.style.width = newWidth + "px";
