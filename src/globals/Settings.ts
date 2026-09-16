@@ -80,6 +80,15 @@ export const Settings: GlobalConfig = {
                   "The page rendered at /. Leave empty to show the page list.",
               },
             },
+            {
+              name: "defaultPageTemplate",
+              type: "relationship",
+              relationTo: "templates",
+              admin: {
+                description:
+                  "Site-wide template applied to all pages. Pages can override this with their own template.",
+              },
+            },
           ],
         },
         {

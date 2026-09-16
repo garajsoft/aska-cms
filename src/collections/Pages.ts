@@ -32,6 +32,15 @@ export const Pages: CollectionConfig = {
       admin: { description: "URL path, e.g. 'home' or 'about'." },
     },
     {
+      name: "template",
+      type: "relationship",
+      relationTo: "templates",
+      admin: {
+        description:
+          "Optional page template. If set, wraps this page content. Leave empty to use the site-wide default from Settings.",
+      },
+    },
+    {
       type: "collapsible",
       label: "SEO & Social",
       admin: { initCollapsed: true },
