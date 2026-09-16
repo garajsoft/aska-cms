@@ -147,54 +147,17 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const modules = await Promise.all([
+      const [grapesjs, presetWebpage, blocksBasic, forms, pluginExport] = await Promise.all([
         import("grapesjs"),
         import("grapesjs-preset-webpage"),
         import("grapesjs-blocks-basic"),
-        import("grapesjs-blocks-flexbox"),
         import("grapesjs-plugin-forms"),
         import("grapesjs-plugin-export"),
-        import("grapesjs-component-countdown"),
-        import("grapesjs-navbar"),
-        import("grapesjs-tabs"),
-        import("grapesjs-tooltip"),
-        import("grapesjs-style-gradient"),
-        import("grapesjs-lory"),
-        import("grapesjs-preset-newsletter"),
-      ].map(p => p.catch(() => ({ default: null }))));
-
-      const [
-        grapesjs,
-        presetWebpage,
-        blocksBasic,
-        blocksFlex,
-        forms,
-        pluginExport,
-        countdown,
-        navbar,
-        tabs,
-        tooltip,
-        gradient,
-        lory,
-        newsletter,
-      ] = modules.map(m => m.default);
+      ]).then(mods => mods.map(m => m.default));
 
       if (cancelled || !containerRef.current) return;
 
-      const plugins = [
-        presetWebpage,
-        blocksBasic,
-        blocksFlex,
-        forms,
-        pluginExport,
-        countdown,
-        navbar,
-        tabs,
-        tooltip,
-        gradient,
-        lory,
-        newsletter,
-      ].filter(Boolean);
+      const plugins = [presetWebpage, blocksBasic, forms, pluginExport];
 
       const editor = grapesjs.default.init({
         container: containerRef.current,

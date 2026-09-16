@@ -2,22 +2,12 @@
 
 ## GrapesJS Plugins Loaded
 
-All available GrapesJS plugins are now enabled to unlock maximum design flexibility:
+Stable, verified GrapesJS plugins enabled for reliable page building:
 
 ### Core Plugins
 - **grapesjs-preset-webpage** — Full webpage builder foundation
 - **grapesjs-blocks-basic** — Standard HTML blocks (text, images, dividers, etc.)
-- **grapesjs-blocks-flexbox** — Flexbox layout components
 - **grapesjs-plugin-forms** — Form elements and validation
-
-### Advanced Features
-- **grapesjs-component-countdown** — Countdown timer components
-- **grapesjs-navbar** — Navigation bar builder
-- **grapesjs-tabs** — Tab interface components
-- **grapesjs-tooltip** — Tooltip/help text blocks
-- **grapesjs-style-gradient** — Gradient editor for backgrounds
-- **grapesjs-lory** — Carousel/slider components
-- **grapesjs-preset-newsletter** — Email template components
 - **grapesjs-plugin-export** — Export designs to HTML/CSS
 
 **Available in Editor at:** `/editor?slug=pagename`
@@ -102,24 +92,6 @@ All Payload field types are available when building custom collections:
 
 ---
 
-## Example Collection
-
-An **Examples** collection is included in the admin that showcases every field type. Use it as a reference when building your own collections:
-
-**Admin Path:** `/admin/collections/examples`
-
-This collection demonstrates:
-- All text field variations
-- Rich text editing
-- Date/time selection
-- Relationships between collections
-- Nested groups and tabs
-- File uploads
-- Geolocation
-- JSON storage
-
----
-
 ## What's Available Now
 
 ### In the Admin
@@ -128,7 +100,6 @@ This collection demonstrates:
 - **Products** — Ecommerce products (Stripe-ready)
 - **Templates** — Email/page templates with placeholders
 - **Media** — Image and file library
-- **Examples** — Reference collection (all field types)
 - **Settings** — Global site configuration
 
 ### In the Visual Editor (`/editor`)
