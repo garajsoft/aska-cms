@@ -35,22 +35,26 @@ export function RichTextStyles() {
       img.dataset.resizeSetup = "true";
 
       // Style the image for inline positioning. Payload's own editor theme
-      // CSS caps upload preview images at a fixed max-width (e.g. 450px) but
-      // leaves max-height uncapped - so once a resize target width exceeded
-      // that cap, the rendered width stayed clamped while height kept
-      // growing from the (uncapped) target width, visually stretching the
-      // image taller instead of wider. Override max-height entirely (our
-      // own width/height pair is always aspect-correct, so it never needs
-      // capping), but replace - not remove - max-width: a freshly inserted
-      // image at its full native resolution needs a cap from the moment
-      // it's inserted, before any manual resize, or it renders at full
-      // pixel width and overflows into the sidebar.
+      // pins upload preview images to a fixed 450px box depending on
+      // orientation: landscape gets `max-width: 450px; min-width: 450px`,
+      // portrait gets `max-height: 450px; min-height: 450px`. We already
+      // knew about the max- side (it caused images to stretch instead of
+      // grow past 450px) - but min-width/min-height are a floor, not a
+      // ceiling: whichever axis Payload pins can never render below 450px
+      // no matter what our own resize math sets it to. So shrinking a
+      // landscape image kept its width stuck at 450px while height (driven
+      // off the *intended*, uncapped width) kept shrinking - visually
+      // squishing it vertically instead of scaling it down proportionally.
+      // Neutralize all four so our explicit width/height are the only
+      // constraint in effect, in both directions, for either orientation.
       img.style.display = "inline-block";
       img.style.position = "relative";
       img.style.verticalAlign = "top";
       img.style.cursor = "grab";
       img.style.maxWidth = getMaxWidth(img) + "px";
       img.style.maxHeight = "none";
+      img.style.minWidth = "0";
+      img.style.minHeight = "0";
 
       // Create resize handle
       const handle = document.createElement("div");
