@@ -21,6 +21,7 @@ const ENTRIES: Entry[] = [
   { href: "/admin/collections/users", label: "Users", countSlug: "users" },
   { href: "/admin/collections/media", label: "Media", countSlug: "media" },
   { href: "/admin/collections/templates", label: "Templates", countSlug: "templates" },
+  { href: "/admin/collections/modules", label: "Modules", countSlug: "modules" },
   { href: "/admin/globals/settings", label: "Settings", isGlobal: true },
 ];
 

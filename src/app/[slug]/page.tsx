@@ -1,6 +1,7 @@
 import { readPage } from "@/lib/pages/repo";
 import { pageRenderContext } from "@/lib/pages/context";
 import { renderTemplate } from "@/lib/templates/render";
+import { resolveModules } from "@/lib/modules/resolveModules";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -41,10 +42,14 @@ export default async function Page({ params }: Props) {
   const page = await readPage(slug, { publishedOnly: true });
   if (!page) notFound();
   const ctx = await pageRenderContext(page);
+  // Modules run after template substitution - review text could otherwise
+  // contain `{{`-like sequences the Handlebars-lite engine would try to
+  // resolve as placeholders.
+  const html = await resolveModules(renderTemplate(page.html, ctx));
   return (
     <>
       {page.css && <style dangerouslySetInnerHTML={{ __html: page.css }} />}
-      <div dangerouslySetInnerHTML={{ __html: renderTemplate(page.html, ctx) }} />
+      <div dangerouslySetInnerHTML={{ __html: html }} />
     </>
   );
 }

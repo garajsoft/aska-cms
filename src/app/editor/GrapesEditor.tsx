@@ -191,6 +191,10 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      const modulesFetch = fetch("/api/modules?limit=100&depth=0", { credentials: "include" })
+        .then((r) => (r.ok ? r.json() : { docs: [] }))
+        .catch(() => ({ docs: [] }));
+
       const [grapesjs, presetWebpage, blocksBasic, forms] = await Promise.all([
         import("grapesjs"),
         import("grapesjs-preset-webpage"),
@@ -293,6 +297,27 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
           category: loop.category,
           content: loop.content,
           media: `<div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:#f0f4ff;border-radius:4px;color:#667eea">${iconSvg}</div>`,
+        });
+      }
+
+      // Add one block per configured Modules doc (named/managed in the
+      // Payload admin sidebar under Modules), so dropping it in just means
+      // picking it by the name given there. The placeholder stays flat (no
+      // nested tags) - the live site's render pipeline replaces the whole
+      // element by matching its data-module-id, and a naive non-greedy
+      // "first closing tag" match only works if there's nothing to nest.
+      const modulesData = (await modulesFetch) as {
+        docs?: { id: string | number; name?: string; type?: string }[];
+      };
+      for (const mod of modulesData.docs ?? []) {
+        if (mod.type !== "googleReviews") continue;
+        bm.add(`aska-module-${mod.id}`, {
+          label: mod.name || `Module ${mod.id}`,
+          category: "Modules",
+          content: `<div data-aska-module="google-reviews" data-module-id="${mod.id}" style="padding:24px;text-align:center;color:#999;border:1px dashed #ccc;border-radius:8px">★ Google Reviews — "${
+            mod.name ?? ""
+          }" (reviews render on the live page)</div>`,
+          media: `<div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:#f0f4ff;border-radius:4px;color:#667eea">${ICONS.quote}</div>`,
         });
       }
 

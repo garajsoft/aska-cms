@@ -12,6 +12,7 @@ import { Blog } from "./collections/Blog";
 import { Users } from "./collections/Users";
 import { Media } from "./collections/Media";
 import { Templates } from "./collections/Templates";
+import { Modules } from "./collections/Modules";
 import { Settings } from "./globals/Settings";
 
 const filename = fileURLToPath(import.meta.url);
@@ -50,7 +51,7 @@ export default buildConfig({
       header: ["@/components/admin/RichTextStyles#RichTextStyles"],
     },
   },
-  collections: [Pages, Blog, Templates, Users, Media],
+  collections: [Pages, Blog, Templates, Modules, Users, Media],
   globals: [Settings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",

@@ -5,6 +5,7 @@ import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html";
 import config from "@/payload.config";
 import { readTemplateForCollection } from "@/lib/templates/repo";
 import { renderTemplate } from "@/lib/templates/render";
+import { resolveModules } from "@/lib/modules/resolveModules";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -81,7 +82,9 @@ export default async function Page({ params }: Props) {
       </div>
     );
   }
-  const rendered = renderTemplate(template.html, flattenLexical(doc as Record<string, unknown>));
+  const rendered = await resolveModules(
+    renderTemplate(template.html, flattenLexical(doc as Record<string, unknown>))
+  );
   return (
     <>
       {template.css && <style dangerouslySetInnerHTML={{ __html: template.css }} />}
