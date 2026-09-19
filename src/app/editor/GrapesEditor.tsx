@@ -5,9 +5,24 @@ import Link from "next/link";
 import type { Editor } from "grapesjs";
 import "grapesjs/dist/css/grapes.min.css";
 
+/** Mirrors Components.ts's COMPONENT_CATEGORY_OPTIONS labels, kept separate
+ * so this client bundle doesn't pull in server-side collection config. */
+const COMPONENT_CATEGORY_LABELS: Record<string, string> = {
+  header: "Header",
+  footer: "Footer",
+  hero: "Hero",
+  feature: "Feature",
+  card: "Card",
+  cta: "CTA",
+  pricing: "Pricing",
+  form: "Form",
+  slider: "Slider",
+};
+
 export type EditorTarget =
   | { mode: "page"; slug: string; title: string }
-  | { mode: "template"; id: string | number; name: string; postTypeSlug: string | null };
+  | { mode: "template"; id: string | number; name: string; postTypeSlug: string | null }
+  | { mode: "theme"; scope: string; slot: "header" | "footer"; label: string };
 
 export interface FieldMeta {
   name: string;
@@ -161,9 +176,10 @@ const LOOP_BLOCKS = [
 ];
 
 function buildSaveUrl(t: EditorTarget) {
-  return t.mode === "page"
-    ? `/api/editor/pages/${encodeURIComponent(t.slug)}`
-    : `/api/editor/templates/${encodeURIComponent(String(t.id))}`;
+  if (t.mode === "page") return `/api/editor/pages/${encodeURIComponent(t.slug)}`;
+  if (t.mode === "theme")
+    return `/api/editor/theme/${encodeURIComponent(t.scope)}/${t.slot}`;
+  return `/api/editor/templates/${encodeURIComponent(String(t.id))}`;
 }
 
 function buildSaveBody(t: EditorTarget, html: string, css: string) {
@@ -178,7 +194,9 @@ function viewHref(t: EditorTarget): string | null {
 }
 
 function label(t: EditorTarget): string {
-  return t.mode === "page" ? `/${t.slug}` : `${t.name} (template)`;
+  if (t.mode === "page") return `/${t.slug}`;
+  if (t.mode === "theme") return t.label;
+  return `${t.name} (template)`;
 }
 
 export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Collection Fields" }: Props) {
@@ -192,6 +210,9 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
     let cancelled = false;
     (async () => {
       const modulesFetch = fetch("/api/modules?limit=100&depth=0", { credentials: "include" })
+        .then((r) => (r.ok ? r.json() : { docs: [] }))
+        .catch(() => ({ docs: [] }));
+      const componentsFetch = fetch("/api/components?limit=200&depth=1", { credentials: "include" })
         .then((r) => (r.ok ? r.json() : { docs: [] }))
         .catch(() => ({ docs: [] }));
 
@@ -215,12 +236,17 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
         components:
           initial.html ||
           `<section style="padding:64px 24px;text-align:center;font-family:sans-serif"><h1>${
-            target.mode === "page" ? target.title : target.name
+            target.mode === "page" ? target.title : target.mode === "theme" ? target.label : target.name
           }</h1></section>`,
         style: initial.css || "",
         plugins: plugins,
         pluginsOpts: {
           "grapesjs-blocks-basic": { flexGrid: true },
+        },
+        canvas: {
+          // Design tokens + font-loading CSS from the Styles collection, so
+          // the canvas preview matches what the live site actually renders.
+          styles: ["/api/styles/tokens.css", "/api/styles/typography.css"],
         },
       });
 
@@ -318,6 +344,38 @@ export function GrapesEditor({ target, initial, fields = [], fieldCategory = "Co
             mod.name ?? ""
           }" (reviews render on the live page)</div>`,
           media: `<div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:#f0f4ff;border-radius:4px;color:#667eea">${ICONS.quote}</div>`,
+        });
+      }
+
+      // Add one block per Components doc (authored HTML/CSS/JS, managed in
+      // the admin sidebar under Components), grouped by their own category.
+      interface ComponentDoc {
+        id: string | number;
+        name?: string;
+        category?: string;
+        customCategory?: string;
+        html?: string;
+        css?: string;
+        js?: string;
+        thumbnail?: { url?: string } | string | null;
+      }
+      const componentsData = (await componentsFetch) as { docs?: ComponentDoc[] };
+      const categoryLabel = (c: ComponentDoc) =>
+        c.category === "custom"
+          ? c.customCategory || "Custom"
+          : COMPONENT_CATEGORY_LABELS[c.category ?? ""] || c.category || "Components";
+      for (const c of componentsData.docs ?? []) {
+        const style = c.css ? `<style>${c.css}</style>` : "";
+        const script = c.js ? `<script>${c.js}</script>` : "";
+        const thumb =
+          typeof c.thumbnail === "object" && c.thumbnail?.url
+            ? `<img src="${c.thumbnail.url}" style="width:32px;height:32px;object-fit:cover;border-radius:4px" />`
+            : `<div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:#f0f4ff;border-radius:4px;color:#667eea">${ICONS.grid}</div>`;
+        bm.add(`aska-component-${c.id}`, {
+          label: c.name || `Component ${c.id}`,
+          category: categoryLabel(c),
+          content: `${c.html ?? ""}${style}${script}`,
+          media: thumb,
         });
       }
 

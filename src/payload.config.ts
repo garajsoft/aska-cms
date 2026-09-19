@@ -13,7 +13,11 @@ import { Users } from "./collections/Users";
 import { Media } from "./collections/Media";
 import { Templates } from "./collections/Templates";
 import { Modules } from "./collections/Modules";
+import { Components } from "./collections/Components";
+import { Styles } from "./collections/Styles";
+import { CodeSnippets } from "./collections/CodeSnippets";
 import { Settings } from "./globals/Settings";
+import { ThemeBuilder } from "./globals/ThemeBuilder";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -51,8 +55,8 @@ export default buildConfig({
       header: ["@/components/admin/RichTextStyles#RichTextStyles"],
     },
   },
-  collections: [Pages, Blog, Templates, Modules, Users, Media],
-  globals: [Settings],
+  collections: [Pages, Blog, Templates, Modules, Components, Styles, CodeSnippets, Users, Media],
+  globals: [Settings, ThemeBuilder],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },

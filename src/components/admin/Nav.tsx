@@ -21,7 +21,11 @@ const ENTRIES: Entry[] = [
   { href: "/admin/collections/users", label: "Users", countSlug: "users" },
   { href: "/admin/collections/media", label: "Media", countSlug: "media" },
   { href: "/admin/collections/templates", label: "Templates", countSlug: "templates" },
+  { href: "/admin/collections/components", label: "Components", countSlug: "components" },
+  { href: "/admin/collections/styles", label: "Styles", countSlug: "styles" },
   { href: "/admin/collections/modules", label: "Modules", countSlug: "modules" },
+  { href: "/admin/collections/code-snippets", label: "Code Snippets", countSlug: "code-snippets" },
+  { href: "/admin/globals/theme-builder", label: "Theme Builder", isGlobal: true },
   { href: "/admin/globals/settings", label: "Settings", isGlobal: true },
 ];
 

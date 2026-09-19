@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { withImportExportUI } from "@/lib/importExport/withImportExportUI";
 
 /**
  * Slugs of collections that can be rendered through a template. Add new
@@ -9,7 +10,7 @@ export const RENDERABLE_COLLECTIONS = [
   { label: "Products", value: "products" },
 ] as const;
 
-export const Templates: CollectionConfig = {
+export const Templates: CollectionConfig = withImportExportUI({
   slug: "templates",
   admin: {
     group: "Theme",
@@ -43,4 +44,4 @@ export const Templates: CollectionConfig = {
     },
     { name: "css", type: "code", admin: { language: "css" } },
   ],
-};
+});

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { withImportExportUI } from "@/lib/importExport/withImportExportUI";
 
 /**
  * Reusable content modules. Configure one here, give it a name, then drag it
@@ -6,7 +7,7 @@ import type { CollectionConfig } from "payload";
  * by the name set below). Currently supports Google Reviews; add new `type`
  * options here as more module kinds are built.
  */
-export const Modules: CollectionConfig = {
+export const Modules: CollectionConfig = withImportExportUI({
   slug: "modules",
   labels: { singular: "Module", plural: "Modules" },
   admin: {
@@ -88,4 +89,4 @@ export const Modules: CollectionConfig = {
     { name: "cachedAt", type: "date", admin: { readOnly: true, hidden: true } },
     { name: "cacheError", type: "text", admin: { readOnly: true, hidden: true } },
   ],
-};
+});

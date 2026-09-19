@@ -5,8 +5,9 @@ import {
   lexicalEditor,
   UploadFeature,
 } from "@payloadcms/richtext-lexical";
+import { withImportExportUI } from "@/lib/importExport/withImportExportUI";
 
-export const Blog: CollectionConfig = {
+export const Blog: CollectionConfig = withImportExportUI({
   slug: "blog",
   labels: { singular: "Blog Post", plural: "Blog Posts" },
   admin: {
@@ -161,4 +162,4 @@ export const Blog: CollectionConfig = {
       admin: { position: "sidebar", description: "SEO keywords (comma-separated)." },
     },
   ],
-};
+});
