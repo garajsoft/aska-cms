@@ -13,7 +13,6 @@ export function RichTextStyles() {
   useEffect(() => {
     let resizingImg: HTMLImageElement | null = null;
     let startX = 0;
-    let startY = 0;
     let startWidth = 0;
     let resizeAspectRatio = 1;
 
@@ -67,7 +66,6 @@ export function RichTextStyles() {
       handle.addEventListener("mousedown", (e: MouseEvent) => {
         resizingImg = img;
         startX = e.clientX;
-        startY = e.clientY;
         startWidth = img.offsetWidth || img.width || 400;
         // Lock the ratio to the image's true intrinsic dimensions (guaranteed
         // decoded by now, see the load-event guard in setupImageResize), not
@@ -94,7 +92,7 @@ export function RichTextStyles() {
 
       editors.forEach((editor) => {
         if (!editor) return;
-        editor.querySelectorAll("img").forEach((img: any) => {
+        editor.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
           if (img.offsetWidth > 0) {
             setupImageResize(img);
           }
