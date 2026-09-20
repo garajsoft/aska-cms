@@ -7,8 +7,7 @@
     "build": "next build",
     "generate:importmap": "payload generate:importmap",
     "start": "next start",
-    "lint": "eslint",
-    "seed:landing": "tsx scripts/seed-landing.ts"
+    "lint": "eslint"
   },
   "engines": {
     "node": "22.x"
@@ -26,15 +25,17 @@
     "grapesjs-plugin-forms": "^2.0.6",
     "grapesjs-preset-webpage": "^1.0.3",
     "graphql": "^16.14.2",
+    "js-beautify": "^2.0.3",
     "next": "16.3.4",
     "payload": "^3.89.0",
-    "react": "19.2.1",
-    "react-dom": "19.2.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "sharp": "^0.35.4",
     "stripe": "^22.6.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/js-beautify": "^1.14.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

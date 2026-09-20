@@ -148,7 +148,7 @@ export const ComponentPreview = () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [mode, setMode]);
+  }, [mode]);
 
   if (mode === "closed") return null;
 

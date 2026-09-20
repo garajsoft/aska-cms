@@ -1,10 +1,6 @@
 import type { GlobalConfig, Field } from "payload";
+import { isContentManager } from "@/lib/auth/roles";
 import { CODE_FIELD_ADMIN } from "@/lib/adminFields/codeEditor";
-
-// Same "any signed-in user is admin" convention as payload.config.ts's own
-// `isSignedIn` / CodeSnippets.ts — this codebase has no role-based access
-// helper of its own yet.
-const isSignedIn = ({ req }: { req: { user?: unknown } }) => Boolean(req.user);
 
 export const THEME_SLOT_MODE_OPTIONS = [
   { label: "Default component", value: "DEFAULT_COMPONENT" },
@@ -18,10 +14,10 @@ const isMode = (value: string) => (_data: unknown, sibling: unknown) =>
 
 /**
  * One header or footer slot: DEFAULT_COMPONENT/SAVED_TEMPLATE/CUSTOM_BUILD/NONE.
- * "Saved template" reuses the existing Components collection (category
- * options already include "header"/"footer" — see Components.ts) instead of
- * Templates, which is one-row-per-collection and doesn't fit "pick one of
- * several saved header layouts".
+ * "Saved template" reuses the existing Components collection (it already has
+ * header/footer categories — see COMPONENT_CATEGORY_OPTIONS) instead of the
+ * Templates collection, which is one-row-per-post-type and doesn't fit "pick
+ * one of several saved header layouts".
  */
 function slotFields(kind: "header" | "footer"): Field[] {
   return [
@@ -34,9 +30,7 @@ function slotFields(kind: "header" | "footer"): Field[] {
     {
       name: "template",
       type: "relationship",
-      // "components" is owned by a parallel agent's collection; not yet
-      // registered in payload.config.ts at the time this file was written.
-      relationTo: "components" as never,
+      relationTo: "components",
       filterOptions: { category: { equals: kind } },
       admin: {
         description: `Pick a saved ${kind} block (Components → category: ${kind}).`,
@@ -66,7 +60,7 @@ function slotFields(kind: "header" | "footer"): Field[] {
 export const ThemeBuilder: GlobalConfig = {
   slug: "theme-builder",
   label: "Theme Builder",
-  access: { read: () => true, update: isSignedIn },
+  access: { read: () => true, update: isContentManager },
   admin: {
     group: "Theme",
     description: "Global header/footer and per-page overrides.",

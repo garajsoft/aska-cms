@@ -1,5 +1,7 @@
 import type { CollectionConfig } from "payload";
+import { isContentManager } from "@/lib/auth/roles";
 import { withImportExportUI } from "@/lib/importExport/withImportExportUI";
+import { CODE_FIELD_ADMIN } from "@/lib/adminFields/codeEditor";
 
 /**
  * Slugs of collections that can be rendered through a template. Add new
@@ -26,7 +28,12 @@ export const Templates: CollectionConfig = withImportExportUI({
       },
     },
   },
-  access: { read: () => true },
+  access: {
+    read: () => true,
+    create: isContentManager,
+    update: isContentManager,
+    delete: isContentManager,
+  },
   fields: [
     { name: "name", type: "text", required: true },
     {
@@ -40,8 +47,8 @@ export const Templates: CollectionConfig = withImportExportUI({
     {
       name: "html",
       type: "code",
-      admin: { language: "html", description: "Template HTML with {{placeholders}}." },
+      admin: { language: "html", description: "Template HTML with {{placeholders}}.", ...CODE_FIELD_ADMIN },
     },
-    { name: "css", type: "code", admin: { language: "css" } },
+    { name: "css", type: "code", admin: { language: "css", ...CODE_FIELD_ADMIN } },
   ],
 });
