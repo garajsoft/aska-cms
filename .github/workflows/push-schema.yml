@@ -12,7 +12,7 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - run: yes "" | npx jiti scripts/push-schema.ts
+      - run: npx jiti scripts/push-schema.ts
         env:
           NODE_ENV: production
           JITI_TSCONFIG_PATHS: "true"
