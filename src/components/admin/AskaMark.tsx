@@ -3,8 +3,7 @@
 // Averta is a paid TypeType foundry font; we can't legally bundle the font
 // files ourselves without a license. This references it by family name with
 // a system-sans fallback stack, so it renders correctly the moment actual
-// Averta @font-face files are added (e.g. via the Styles collection's
-// custom-font-upload typography fields) and degrades gracefully until then.
+// Averta @font-face files are added and degrades gracefully until then.
 const ASKA_FONT_STACK =
   '"Averta", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
@@ -26,7 +25,7 @@ export const AskaMark = ({
     }}
     {...rest}
   >
-    aska
+    åska
   </span>
 );
 

@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
-import { getTypographySettings } from "@/lib/settings/repo";
-import { buildTypographyCss } from "@/lib/settings/typography";
+import { getStyleTypographyCss } from "@/lib/styles/repo";
 
 export const dynamic = "force-dynamic";
 
-/** Same live-Settings CSS the site's own <head> gets, as a plain
- * stylesheet — what the GrapesJS canvas iframe loads via canvas.styles
- * (see GrapesEditor.tsx), same pattern as ./tokens.css for design tokens. */
+/** Font-loading CSS (@import / @font-face) for Typography Scale style
+ * tokens — loaded by the GrapesJS canvas iframe (see GrapesEditor.tsx) and
+ * by ComponentPreview's srcDoc iframe, same pattern as ./tokens.css for the
+ * CSS custom properties themselves. */
 export async function GET() {
-  const typography = await getTypographySettings();
-  const css = buildTypographyCss(typography);
+  const css = await getStyleTypographyCss();
   return new NextResponse(css, {
     headers: { "Content-Type": "text/css; charset=utf-8" },
   });

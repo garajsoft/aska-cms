@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@/payload.config";
 import { getCurrentUser } from "@/lib/auth/requireUser";
-import { adminAccess } from "@/lib/auth/roles";
 import { isImportExportCollection, MATCH_FIELD_BY_COLLECTION } from "@/lib/importExport/collections";
 import { extractImportItems } from "@/lib/importExport/footstamp";
 import { sanitizeImportItem } from "@/lib/importExport/sanitize";
@@ -19,7 +18,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
-  if (!user || !adminAccess({ req: { user } })) {
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

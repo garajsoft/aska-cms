@@ -23,7 +23,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (unauth) return unauth;
   const { scope, slot: slotParam } = await params;
   const slot = parseSlot(slotParam);
-  if (!slot) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!slot) return NextResponse.json({ error: "Invalid slot" }, { status: 400 });
   const t = await readThemeSlot(scope, slot);
   if (!t) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(t);
@@ -34,7 +34,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   if (unauth) return unauth;
   const { scope, slot: slotParam } = await params;
   const slot = parseSlot(slotParam);
-  if (!slot) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!slot) return NextResponse.json({ error: "Invalid slot" }, { status: 400 });
   const body = (await req.json()) as { html?: string; css?: string };
   await updateThemeSlotContent({ scope, slot, html: body.html ?? "", css: body.css ?? "" });
   const saved = await readThemeSlot(scope, slot);

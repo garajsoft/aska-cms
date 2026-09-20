@@ -16,10 +16,10 @@ function empty(): CodeSnippetsByLocation {
 
 /**
  * Active Code Snippets, grouped by injection point and concatenated in
- * priority order (lower first) — read once per request by the root layout
- * (see (site)/layout.tsx). Each snippet's `code` already carries its own
- * full tags (<script>...</script>, <style>...</style>, ...), so groups here
- * are just joined strings, never re-wrapped.
+ * priority order (lower first) — read once per request by the root layout.
+ * Each snippet's `code` already carries its own full tags
+ * (<script>...</script>, <style>...</style>, ...), so groups here are just
+ * joined strings, never re-wrapped.
  */
 export async function getCodeSnippetsByLocation(): Promise<CodeSnippetsByLocation> {
   try {

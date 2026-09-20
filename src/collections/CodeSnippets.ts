@@ -1,5 +1,4 @@
 import type { CollectionConfig } from "payload";
-import { isContentManager } from "@/lib/auth/roles";
 import { withImportExportUI } from "@/lib/importExport/withImportExportUI";
 import { CODE_FIELD_ADMIN } from "@/lib/adminFields/codeEditor";
 
@@ -10,6 +9,11 @@ export const CODE_SNIPPET_LOCATIONS = [
   { label: "Before </body> close", value: "before_body_end" },
 ] as const;
 
+// Same "any signed-in user is admin" convention as payload.config.ts's own
+// `isSignedIn` — raw injected code is a bigger blast radius than ordinary
+// content, but this codebase has no role-based access helper of its own yet.
+const isSignedIn = ({ req }: { req: { user?: unknown } }) => Boolean(req.user);
+
 export const CodeSnippets: CollectionConfig = withImportExportUI({
   slug: "code-snippets",
   labels: { singular: "Code Snippet", plural: "Code Snippets" },
@@ -18,17 +22,13 @@ export const CodeSnippets: CollectionConfig = withImportExportUI({
     useAsTitle: "title",
     defaultColumns: ["title", "location", "status", "priority", "updatedAt"],
     description:
-      "Raw HTML/JS/CSS injected site-wide — GA4, GTM, Meta Pixel, Hotjar, custom scripts. Rendered by (site)/layout.tsx; see getCodeSnippetsByLocation.",
+      "Raw HTML/JS/CSS injected site-wide — GA4, GTM, Meta Pixel, Hotjar, custom scripts. Rendered by the root layout; see getCodeSnippetsByLocation.",
   },
-  // Same trust model as Styles: raw injected code is a bigger blast radius
-  // than ordinary content, so writes are content-manager (admin) only, not
-  // every editor. Local API reads (the layout's own fetch) bypass access
-  // control by default regardless of `read` here.
   access: {
     read: () => true,
-    create: isContentManager,
-    update: isContentManager,
-    delete: isContentManager,
+    create: isSignedIn,
+    update: isSignedIn,
+    delete: isSignedIn,
   },
   fields: [
     { name: "title", type: "text", required: true },

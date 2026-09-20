@@ -1,6 +1,5 @@
 import type { CollectionConfig } from "payload";
 import { withImportExportUI } from "@/lib/importExport/withImportExportUI";
-import { CODE_FIELD_ADMIN } from "@/lib/adminFields/codeEditor";
 
 export const Pages: CollectionConfig = withImportExportUI({
   slug: "pages",
@@ -34,6 +33,15 @@ export const Pages: CollectionConfig = withImportExportUI({
       admin: { description: "URL path, e.g. 'home' or 'about'." },
     },
     {
+      name: "template",
+      type: "relationship",
+      relationTo: "templates",
+      admin: {
+        description:
+          "Optional page template. If set, wraps this page content. Leave empty to use the site-wide default from Settings.",
+      },
+    },
+    {
       type: "collapsible",
       label: "SEO & Social",
       admin: { initCollapsed: true },
@@ -61,12 +69,12 @@ export const Pages: CollectionConfig = withImportExportUI({
     {
       name: "html",
       type: "code",
-      admin: { language: "html", description: "HTML from GrapesJS.", ...CODE_FIELD_ADMIN },
+      admin: { language: "html", description: "HTML from GrapesJS." },
     },
     {
       name: "css",
       type: "code",
-      admin: { language: "css", description: "CSS from GrapesJS.", ...CODE_FIELD_ADMIN },
+      admin: { language: "css", description: "CSS from GrapesJS." },
     },
   ],
 });

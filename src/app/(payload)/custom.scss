@@ -1,135 +1,28 @@
-/* Code editors must never inherit --font-master (Settings → Typography).
-   Payload's `code` field (Components/CodeSnippets html/css/js) is Monaco
-   under the hood — its wrapper is `.code-editor`, Monaco's own root is
-   `.monaco-editor` (kept as its own top-level selector too, not just nested
-   under .code-editor, because Monaco portals overlays like its autocomplete
-   and hover widgets straight onto <body>, outside .code-editor's subtree).
-   This has to win over buildFontMasterCss's `span`/`textarea` !important
-   rule (admin-wide when Settings → "Also apply to the admin dashboard" is
-   on) — a class selector like `.code-editor *` already outranks a bare type
-   selector like `span` on specificity even before !important is considered,
-   so no :not() needs adding to that shared rule; new exclusions like this
-   one are handled locally, at their own point of use, instead of growing an
-   ever-longer :not() list on the one shared selector every collaborator has
-   to touch. Monaco also computes glyph-width metrics against whatever font
-   it's told to use — a CSS-only font swap without this would misalign text,
-   not just look wrong. */
-.code-editor,
-.code-editor *,
-.monaco-editor,
-.monaco-editor * {
-  font-family:
-    "Fira Code",
-    "JetBrains Mono",
-    Consolas,
-    Monaco,
-    "Andale Mono",
-    "Ubuntu Mono",
-    "Courier New",
-    monospace !important;
-  font-variant-ligatures: normal;
-  tab-size: 2;
-  letter-spacing: 0;
-}
-
-/* Monaco's own gutter/folding glyphs (.codicon-folding-expanded etc.) render
-   from its bundled "codicon" icon font (embedded as a data: URI @font-face —
-   nothing to load from a CDN), via `content` on the class's own ::before
-   pseudo-element (see monaco-editor's codicon.css + its per-icon rules
-   injected at runtime by iconsStyleSheet.ts). Two different global
-   `!important` rules were clobbering that font-family:
-     1. The `.monaco-editor *` rule directly above, on the .codicon element
-        itself.
-     2. Settings → Typography's buildFontMasterCss(), which (when "Also
-        apply to the admin dashboard" is on) emits a `*, *::before, *::after
-        { font-family: ... !important }` rule admin-wide. A pseudo-element's
-        font-family is normally *inherited* from its host element, but an
-        explicit declared value — even from the lowest-specificity `*`
-        selector — always wins over an inherited one, so that rule reaches
-        the ::before glyph regardless of how specific `.codicon`'s own rule
-        is. Explicitly re-targeting `::before`/`::after` here (higher
-        specificity than a bare `*::before`) is what actually wins.
-   Scoped to .code-editor/.monaco-editor only — does not touch
-   buildFontMasterCss, --font-master, or any global CSS file. */
-.code-editor .codicon,
-.code-editor [class^="codicon-"],
-.code-editor [class*=" codicon-"],
-.code-editor .codicon::before,
-.code-editor [class^="codicon-"]::before,
-.code-editor [class*=" codicon-"]::before,
-.code-editor .codicon::after,
-.code-editor [class^="codicon-"]::after,
-.code-editor [class*=" codicon-"]::after,
-.monaco-editor .codicon,
-.monaco-editor [class^="codicon-"],
-.monaco-editor [class*=" codicon-"],
-.monaco-editor .codicon::before,
-.monaco-editor [class^="codicon-"]::before,
-.monaco-editor [class*=" codicon-"]::before,
-.monaco-editor .codicon::after,
-.monaco-editor [class^="codicon-"]::after,
-.monaco-editor [class*=" codicon-"]::after {
-  font-family: "codicon" !important;
-}
-
-/* Aska admin theme — modular design tokens bridged from Settings → Admin
-   Theme via the --admin-* custom properties (see layout.tsx, which injects
-   the live per-theme values scoped by :root[data-theme]; the var()
-   fallbacks below are the shipped defaults, used until that Settings doc
-   is saved). Each --admin-* name is reused across both theme scopes below
-   (never on a bare `:root`) — that's what a previous version got wrong:
-   an unscoped :root override of --theme-elevation-1000 leaked into dark
-   mode too, since `:root` IS <html> regardless of its data-theme value,
-   making text invisible against a same-toned background.
-
-   Primary Button Text Color forces white per Settings — note white on the
-   default #6395DA accent is only ~3.1:1 contrast, under WCAG AA's 4.5:1
-   for normal text; change that field in Settings if you want AA here. */
+/* Aska admin theme — my own CSS, dark green accent. */
 :root {
-  --theme-success-500: var(--admin-primary, #6395da);
-  --theme-success-600: var(--admin-primary, #6395da);
-  --theme-success-400: var(--admin-primary, #6395da);
-  --accessibility-outline: 2px solid var(--admin-focus, #6395da);
+  --theme-success-500: #1f3a2e;
+  --theme-success-600: #16281f;
+  --theme-success-400: #2f5c48;
+  --theme-elevation-1000: #101a15;
 }
 
-:root[data-theme="light"] {
-  --theme-elevation-0: var(--admin-main-bg, #ffffff);
-  --theme-elevation-50: var(--admin-card-bg, #f8fafc);
-  --theme-elevation-800: var(--admin-base-text, #0f172a);
-  --theme-elevation-1000: var(--admin-base-text, #0f172a);
-  --theme-elevation-400: var(--admin-muted-text, #64748b);
-  --theme-border-color: var(--admin-border, #e2e8f0);
+html[data-theme="dark"] {
+  --theme-success-500: #6cb28c;
+  --theme-success-600: #85c6a4;
+  --theme-success-400: #5a9c78;
 }
 
-:root[data-theme="dark"] {
-  --theme-elevation-0: var(--admin-main-bg, #141e2c);
-  --theme-elevation-50: var(--admin-card-bg, #1b2638);
-  --theme-elevation-800: var(--admin-base-text, #f8fafc);
-  --theme-elevation-1000: var(--admin-base-text, #f8fafc);
-  --theme-elevation-400: var(--admin-muted-text, #94a3b8);
-  --theme-border-color: var(--admin-border, #2d3748);
-}
-
-/* Primary buttons / CTAs → brand accent, forced high-contrast text. */
+/* Primary buttons → dark green. */
 button.btn--style-primary,
 a.btn--style-primary {
   background: var(--theme-success-500);
   border-color: var(--theme-success-500);
-  color: var(--admin-primary-text, #ffffff);
-  font-weight: 600;
+  color: #fff;
   &:hover,
   &:focus {
-    background: color-mix(in srgb, var(--theme-success-500) 85%, black);
-    border-color: color-mix(in srgb, var(--theme-success-500) 85%, black);
+    background: var(--theme-success-600);
+    border-color: var(--theme-success-600);
   }
-}
-
-/* Requirement: Settings title (and any doc title) must never clip. */
-.doc-header__title,
-.doc-header__title.render-title {
-  overflow: visible !important;
-  text-overflow: unset !important;
-  white-space: normal !important;
 }
 
 /* Status pill styling on list rows. */
@@ -138,79 +31,53 @@ a.btn--style-primary {
   color: var(--theme-success-500);
 }
 
+/* Hide Payload's Icon slot in the app header (we return null from Icon).
+   Payload's built-in Dashboard breadcrumb already covers that role. */
+.app-header .graphic-icon,
+.app-header .icon--graphic,
+.app-header a[href="/admin"]:first-child:empty,
+.step-nav__step:first-child:empty {
+  display: none !important;
+}
 .step-nav a,
 .step-nav__last {
   white-space: nowrap;
 }
 
-/* Payload sizes the home slot for an icon (18x18, overflow clipped) - our
-   Icon renders the word "Dashboard" there instead, so let it size to its
-   text. */
+/* Breadcrumb home crumb: the Icon slot renders empty (Icon returns null in
+   Logo.tsx), leaving a blank before the first "/". Show the word "Dashboard"
+   there instead — sized to match the other crumbs, never clipped. */
+.step-nav__home span {
+  display: inline-block;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+}
 .step-nav__home {
   width: auto;
   height: auto;
-  white-space: nowrap;
+  min-width: max-content;
+  flex-shrink: 0;
 }
-
-/* On /admin itself our Icon renders nothing (the dashboard's own header
-   already says "Dashboard") - but Payload's step-nav always renders a "/"
-   separator right after the home slot regardless, leaving an orphan slash
-   with nothing before it. Hide both the empty home slot and that slash so
-   the dashboard's own "Dashboard" step sits flush left. */
-.step-nav__home:has(span:empty),
-.step-nav__home:has(span:empty) + span {
-  display: none;
+.step-nav__home span::before {
+  content: "Dashboard";
 }
-
-/* ---------------- Fixed sidebar / independent content scroll ----------------
-   Payload's own grid (.template-default: nav column | wrap column) already
-   keeps .nav sticky with .nav__scroll independently scrollable — left
-   `display:grid` alone so the mobile nav-toggler's grid-template-columns
-   slide animation keeps working. The only gap: the grid has no height cap,
-   so the whole document scrolled as one page (nav just happened to stay put
-   via sticky). Capping it to the viewport turns that into two real
-   independent scroll panes with no double scrollbar, and .doc-controls'
-   sticky save bar now sticks to the content pane's top instead of the
-   page's, which is what it was already trying to do. */
-.template-default {
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
-}
-.template-default__wrap {
-  height: 100vh;
-  max-height: 100vh;
-  overflow-y: auto;
-}
-
-/* Components collection: Split View/Fullscreen header buttons (see
-   ComponentPreviewToggle). Secondary style already gives them the Save
-   button's height/padding/radius (same `size="medium"` .btn base) — these
-   overrides only touch the CSS custom properties .btn reads for color, so
-   nothing here needs !important. */
-.aska-header-preview-btn {
-  --color: #2563eb;
-  --bg-color: #ffffff;
-  --btn-border: 1px solid #2563eb;
-  --hover-color: #2563eb;
-  --hover-bg: #eff6ff;
-  --hover-btn-border: 1px solid #2563eb;
+.step-nav__home:hover span::before {
+  text-decoration: underline;
 }
 
 /* ---------------- Custom sidebar (AskaNav) ---------------- */
-/* Independent sidebar surface/text — separate from the main content bg/text. */
-.nav {
-  background: var(--admin-sidebar-bg, var(--theme-elevation-0));
-}
 .aska-nav {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: auto;
   padding: 20px 14px;
   font-family:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  color: var(--admin-sidebar-text, var(--theme-elevation-1000));
+  color: var(--theme-elevation-1000);
 }
 .aska-nav__brand {
   display: flex;
@@ -246,17 +113,17 @@ a.btn--style-primary {
   padding: 8px 10px;
   border-radius: 6px;
   font-size: 14px;
-  color: color-mix(in srgb, var(--admin-sidebar-text, var(--theme-elevation-1000)) 78%, transparent);
+  color: color-mix(in srgb, var(--theme-elevation-1000) 78%, transparent);
   text-decoration: none;
   transition: background 0.1s, color 0.1s;
   &:hover {
-    background: color-mix(in srgb, var(--admin-sidebar-text, var(--theme-elevation-1000)) 5%, transparent);
-    color: var(--admin-sidebar-text, var(--theme-elevation-1000));
+    background: color-mix(in srgb, var(--theme-elevation-1000) 5%, transparent);
+    color: var(--theme-elevation-1000);
   }
   &.is-active {
-    color: var(--admin-focus, #6395da);
+    color: var(--theme-elevation-1000);
     font-weight: 600;
-    background: color-mix(in srgb, var(--admin-sidebar-text, var(--theme-elevation-1000)) 6%, transparent);
+    background: color-mix(in srgb, var(--theme-elevation-1000) 6%, transparent);
   }
 }
 .aska-nav__label {
@@ -267,35 +134,13 @@ a.btn--style-primary {
   opacity: 0.5;
   font-variant-numeric: tabular-nums;
 }
-.aska-nav__me-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-  padding: 10px;
-  border-top: 1px solid color-mix(in srgb, var(--admin-sidebar-text, var(--theme-elevation-1000)) 8%, transparent);
-}
 .aska-nav__me {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 0;
-  flex: 1;
-  text-decoration: none;
-  color: inherit;
-}
-.aska-nav__logout {
-  flex-shrink: 0;
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 5px;
-  text-decoration: none;
-  opacity: 0.6;
-  color: inherit;
-  &:hover {
-    opacity: 1;
-    background: color-mix(in srgb, var(--admin-sidebar-text, var(--theme-elevation-1000)) 6%, transparent);
-  }
+  margin-top: 16px;
+  padding: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--theme-elevation-1000) 8%, transparent);
 }
 .aska-nav__avatar {
   display: grid;
@@ -316,19 +161,7 @@ a.btn--style-primary {
   white-space: nowrap;
 }
 
-/* Payload pins the sidebar's collapse toggle to the screen's left edge
-   (left: 0), which lands it at the sidebar's top-left corner. Move it to
-   the seam between nav and content (the sidebar's right edge) instead. */
-@media (min-width: 768.01px) {
-  .template-default__nav-toggler-wrapper {
-    left: calc(var(--nav-width) - var(--gutter-h));
-  }
-}
-
 /* ---------------- Dashboard widgets ---------------- */
-.gutter.dashboard {
-  padding-bottom: 2rem;
-}
 .aska-dashboard {
   padding: 8px 0 24px;
   color: var(--theme-elevation-1000);
@@ -402,14 +235,4 @@ a.btn--style-primary {
   letter-spacing: -0.01em;
   line-height: 1.1;
   margin-top: 4px;
-}
-.aska-widget__stats {
-  display: flex;
-  gap: 28px;
-  margin-bottom: 8px;
-}
-.aska-widget__stat-label {
-  font-size: 11px;
-  opacity: 0.5;
-  margin-top: 2px;
 }

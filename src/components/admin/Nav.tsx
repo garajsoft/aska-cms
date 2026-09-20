@@ -16,12 +16,6 @@ const ENTRIES: Entry[] = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/collections/pages", label: "Pages", countSlug: "pages" },
   { href: "/admin/collections/blog", label: "Blog", countSlug: "blog" },
-  { href: "/admin/collections/forms", label: "Forms", countSlug: "forms" },
-  {
-    href: "/admin/collections/form-submissions",
-    label: "Form Submissions",
-    countSlug: "form-submissions",
-  },
   { href: "/admin/collections/products", label: "Products", countSlug: "products" },
   { href: "/admin/collections/orders", label: "Orders", countSlug: "orders" },
   { href: "/admin/collections/users", label: "Users", countSlug: "users" },
@@ -30,11 +24,7 @@ const ENTRIES: Entry[] = [
   { href: "/admin/collections/components", label: "Components", countSlug: "components" },
   { href: "/admin/collections/styles", label: "Styles", countSlug: "styles" },
   { href: "/admin/collections/modules", label: "Modules", countSlug: "modules" },
-  {
-    href: "/admin/collections/code-snippets",
-    label: "Code Snippets",
-    countSlug: "code-snippets",
-  },
+  { href: "/admin/collections/code-snippets", label: "Code Snippets", countSlug: "code-snippets" },
   { href: "/admin/globals/theme-builder", label: "Theme Builder", isGlobal: true },
   { href: "/admin/globals/settings", label: "Settings", isGlobal: true },
 ];
@@ -115,16 +105,11 @@ export const AskaNav = () => {
       </ul>
 
       {me && (
-        <div className="aska-nav__me-row">
-          <Link href="/admin/account" className="aska-nav__me">
-            <span className="aska-nav__avatar" aria-hidden>
-              {(me.email ?? "?").slice(0, 1).toUpperCase()}
-            </span>
-            <span className="aska-nav__me-text">{me.email}</span>
-          </Link>
-          <Link href="/admin/logout" className="aska-nav__logout" title="Log out">
-            Log out
-          </Link>
+        <div className="aska-nav__me">
+          <span className="aska-nav__avatar" aria-hidden>
+            {(me.email ?? "?").slice(0, 1).toUpperCase()}
+          </span>
+          <span className="aska-nav__me-text">{me.email}</span>
         </div>
       )}
     </nav>
