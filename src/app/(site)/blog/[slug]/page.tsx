@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPayload } from "payload";
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html";
+import { withUploadWidth } from "@/lib/richtext/converters";
 import config from "@/payload.config";
 import { readTemplateForCollection } from "@/lib/templates/repo";
 import { renderTemplate } from "@/lib/templates/render";
@@ -61,8 +62,11 @@ function flattenLexical(doc: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = { ...doc };
   for (const [k, v] of Object.entries(out)) {
     if (isLexicalDoc(v)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      out[k] = convertLexicalToHTML({ data: v as any });
+      out[k] = convertLexicalToHTML({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: v as any,
+        converters: ({ defaultConverters }) => withUploadWidth(defaultConverters),
+      });
     }
   }
   return out;

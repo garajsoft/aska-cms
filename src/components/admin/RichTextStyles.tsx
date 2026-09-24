@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { $getNearestNodeFromDOMNode, getNearestEditorFromDOMNode } from "lexical";
 
 // The resize handle is 32px square and sits 12px outside the image edges,
 // so it overlaps the image by ~20px on each side. Below this width the
@@ -8,6 +9,64 @@ import { useEffect } from "react";
 // covered a third of the width and half the height), making a correctly
 // proportioned image look broken even though its actual box math is fine.
 const MIN_RESIZE_WIDTH = 120;
+
+/** Duck-typed Lexical upload node — the component must not depend on
+ *  richtext-lexical internals beyond the stable getData/setData pair. */
+interface UploadNodeLike {
+  getType?: () => string;
+  getData?: () => { fields?: Record<string, unknown> };
+  setData?: (data: unknown) => void;
+}
+
+/** The Lexical editor is stamped on the editor root element by Lexical
+ *  itself; the img sits inside a decorator whose wrapper carries the node
+ *  key, so the nearest-node lookup from the img resolves the upload node.
+ *  Both helpers come from the same lexical module instance Payload's editor
+ *  uses (single deduped copy in the bundle). */
+function editorFor(img: HTMLImageElement) {
+  try {
+    return getNearestEditorFromDOMNode(img) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function readUploadNode(
+  img: HTMLImageElement,
+  read: (node: UploadNodeLike) => void
+): void {
+  const editor = editorFor(img);
+  if (!editor) return;
+  try {
+    editor.read(() => {
+      const node = $getNearestNodeFromDOMNode(img) as UploadNodeLike | null;
+      if (node?.getType?.() === "upload") read(node);
+    });
+  } catch {
+    // not inside a Lexical editor context — ignore
+  }
+}
+
+/** Persist the dragged width into the node's custom fields, so it survives
+ *  save/reload (a bare DOM style is wiped the next time Lexical re-renders
+ *  the decorator). Also what the public-site HTML converter reads. */
+function persistWidth(img: HTMLImageElement, widthPx: number): void {
+  const editor = editorFor(img);
+  if (!editor) return;
+  try {
+    editor.update(() => {
+      const node = $getNearestNodeFromDOMNode(img) as UploadNodeLike | null;
+      if (node?.getType?.() !== "upload" || !node.getData || !node.setData) return;
+      const data = node.getData();
+      node.setData({
+        ...data,
+        fields: { ...data.fields, width: `${widthPx}px` },
+      });
+    });
+  } catch {
+    // Lexical unreachable — the DOM-only resize still stands.
+  }
+}
 
 export function RichTextStyles() {
   useEffect(() => {
@@ -54,6 +113,21 @@ export function RichTextStyles() {
       img.style.maxHeight = "none";
       img.style.minWidth = "0";
       img.style.minHeight = "0";
+
+      // Re-apply a width persisted by an earlier drag: Lexical re-renders
+      // the decorator from node data, and Payload's own upload component
+      // ignores the custom width field, so nothing else restores it.
+      readUploadNode(img, (node) => {
+        const stored = node.getData?.()?.fields?.width;
+        if (typeof stored !== "string" || !stored.trim()) return;
+        const px = parseFloat(stored);
+        if (stored.endsWith("px") && !Number.isNaN(px)) {
+          img.style.width = px + "px";
+          img.style.height = px * (img.naturalHeight / img.naturalWidth) + "px";
+        } else {
+          img.style.width = stored;
+        }
+      });
 
       // Create resize handle
       const handle = document.createElement("div");
@@ -129,6 +203,7 @@ export function RichTextStyles() {
     const onMouseUp = () => {
       if (resizingImg) {
         resizingImg.style.cursor = "grab";
+        persistWidth(resizingImg, resizingImg.offsetWidth);
         resizingImg = null;
       }
       document.body.style.userSelect = "auto";

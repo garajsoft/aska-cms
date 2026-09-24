@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getPayload } from "payload";
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html";
+import { withUploadWidth } from "@/lib/richtext/converters";
 import config from "@/payload.config";
 import { checkPrivateAccess } from "@/lib/auth/gate";
 import { readTemplateForCollection } from "@/lib/templates/repo";
@@ -30,8 +31,14 @@ async function fetchDesign(slug: string) {
 function flattenDescription(doc: Record<string, unknown>): Record<string, unknown> {
   const description = doc.description;
   if (!description || typeof description !== "object") return doc;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return { ...doc, description: convertLexicalToHTML({ data: description as any }) };
+  return {
+    ...doc,
+    description: convertLexicalToHTML({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: description as any,
+      converters: ({ defaultConverters }) => withUploadWidth(defaultConverters),
+    }),
+  };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
