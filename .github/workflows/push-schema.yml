@@ -12,8 +12,13 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - run: npx jiti scripts/push-schema.ts
+      # yes "" feeds Enter to every drizzle disambiguation prompt, accepting
+      # the default '+ create' — without a TTY the push otherwise hangs or
+      # silently stops after the first prompt. JITI_TSCONFIG_PATHS makes jiti
+      # resolve the '@/' alias used inside src/.
+      - run: yes "" | npx jiti scripts/push-schema.ts
         env:
           NODE_ENV: production
+          JITI_TSCONFIG_PATHS: "true"
           DATABASE_URI: ${{ secrets.DATABASE_URI }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
