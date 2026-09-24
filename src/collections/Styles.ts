@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { isContentManager } from "@/lib/auth/roles";
 import { withImportExportUI } from "@/lib/importExport/withImportExportUI";
 
 export const STYLE_CATEGORIES = [
@@ -52,7 +53,12 @@ export const Styles: CollectionConfig = withImportExportUI({
     description:
       "Design tokens exposed as CSS custom properties (--{slug} for Color/Spacing/Radius, --{property}-{slug} for Typography) on the site and in the GrapesJS canvas.",
   },
-  access: { read: () => true },
+  access: {
+    read: () => true,
+    create: isContentManager,
+    update: isContentManager,
+    delete: isContentManager,
+  },
   hooks: {
     beforeValidate: [
       ({ data }) => {

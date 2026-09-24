@@ -80,9 +80,10 @@ function ruleRowPath(slotPath: string): string | null {
  * in each header/footer group (see slotFields() in ThemeBuilder.ts), so one
  * component handles Global Defaults and every Custom Overrides row.
  *
- * State here is local (not a shared singleton) — a Theme Builder page can
- * have several slots open at once (Global header + footer, plus one per
- * override row), so a shared store doesn't fit.
+ * Unlike Components' single-doc split/fullscreen store (componentPreviewStore),
+ * state here is local — a Theme Builder page can have several slots open at
+ * once (Global header + footer, plus one per override row), so a shared
+ * singleton doesn't fit.
  */
 export const ThemeSlotPreview = () => {
   const path = useFieldPath();
@@ -103,7 +104,7 @@ export const ThemeSlotPreview = () => {
   const srcDoc = useMemo(() => buildSrcDoc(html, css), [html, css]);
 
   if (mode === "DEFAULT_COMPONENT") {
-    return <p style={noteStyle}>Renders whatever this {slot} normally shows on the site.</p>;
+    return <p style={noteStyle}>Renders the built-in {slot === "header" ? "<Header />" : "<Footer />"} component.</p>;
   }
 
   if (mode === "NONE") {

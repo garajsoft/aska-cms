@@ -15,6 +15,5 @@ jobs:
       - run: npx jiti scripts/push-schema.ts
         env:
           NODE_ENV: production
-          JITI_TSCONFIG_PATHS: "true"
           DATABASE_URI: ${{ secrets.DATABASE_URI }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}

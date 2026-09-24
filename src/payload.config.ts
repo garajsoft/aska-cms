@@ -12,35 +12,28 @@ import { Blog } from "./collections/Blog";
 import { Users } from "./collections/Users";
 import { Media } from "./collections/Media";
 import { Templates } from "./collections/Templates";
-import { Modules } from "./collections/Modules";
 import { Components } from "./collections/Components";
 import { Styles } from "./collections/Styles";
+import { HouseDesigns } from "./collections/HouseDesigns";
+import { Forms } from "./collections/Forms";
+import { FormSubmissions } from "./collections/FormSubmissions";
 import { CodeSnippets } from "./collections/CodeSnippets";
+import { PageViews } from "./collections/PageViews";
 import { Settings } from "./globals/Settings";
 import { ThemeBuilder } from "./globals/ThemeBuilder";
+import { isSignedIn } from "./lib/auth/isSignedIn";
+import { withImportExportUI } from "./lib/importExport/withImportExportUI";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
-
-// Simple starter access: any signed-in user is admin. Tighten before shipping.
-const isSignedIn = ({ req }: { req: { user?: unknown } }) => Boolean(req.user);
-
-// The ecommerce plugin builds its per-currency price fields as NAMELESS group
-// fields whose inner fields are `priceInUSDEnabled` / `priceInUSD` etc. — so a
-// name-based filter never matches. Detect them by their serialized children.
-const isCurrencyPriceGroup = (f: unknown): boolean =>
-  typeof f === "object" &&
-  f !== null &&
-  (f as { type?: string }).type === "group" &&
-  JSON.stringify(f).includes('"priceIn');
 
 export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
     meta: {
-      title: "åska CMS",
-      titleSuffix: " · åska",
+      title: "aska CMS",
+      titleSuffix: " · aska",
       icons: [{ rel: "icon", type: "image/svg+xml", url: "/aska-favicon.svg" }],
     },
     components: {
@@ -49,14 +42,25 @@ export default buildConfig({
         Logo: "@/components/admin/Logo#Logo",
         Icon: "@/components/admin/Logo#Icon",
       },
-      beforeDashboard: ["@/components/admin/dashboard/AskaDashboard#AskaDashboard"],
-      // `header` renders globally on every admin route (beforeDashboard only
-      // renders on the dashboard itself) - RichTextStyles needs to be mounted
-      // wherever a richText field might appear, e.g. Blog's edit view.
-      header: ["@/components/admin/RichTextStyles#RichTextStyles"],
+      beforeDashboard: [
+        "@/components/admin/dashboard/AskaDashboard#AskaDashboard",
+      ],
     },
   },
-  collections: [Pages, Blog, Templates, Modules, Components, Styles, CodeSnippets, Users, Media],
+  collections: [
+    Pages,
+    Blog,
+    Templates,
+    Components,
+    Styles,
+    HouseDesigns,
+    Forms,
+    FormSubmissions,
+    CodeSnippets,
+    PageViews,
+    Users,
+    Media,
+  ],
   globals: [Settings, ThemeBuilder],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
@@ -71,6 +75,38 @@ export default buildConfig({
     push: process.env.NODE_ENV !== "production",
   }),
   sharp,
+  onInit: async (payload) => {
+    // Safety net so an RBAC rollout can never lock everyone out of /admin —
+    // runs on every boot (dev included); cheap no-op once an admin-capable
+    // user already exists.
+    try {
+      const admins = await payload.count({
+        collection: "users",
+        where: { roles: { in: ["super-admin", "admin", "editor"] } },
+      });
+      if (admins.totalDocs === 0) {
+        const { docs } = await payload.find({
+          collection: "users",
+          limit: 1,
+          sort: "createdAt",
+        });
+        const first = docs[0];
+        if (first) {
+          await payload.update({
+            collection: "users",
+            id: first.id,
+            data: { roles: "super-admin" },
+            context: { skipRoleGuard: true },
+          });
+          payload.logger.warn(
+            `No admin-capable user existed — promoted ${first.email} to super-admin.`
+          );
+        }
+      }
+    } catch (err) {
+      payload.logger.error({ err }, "Admin-role safety-net check failed");
+    }
+  },
   plugins: [
     ecommercePlugin({
       access: {
@@ -84,30 +120,15 @@ export default buildConfig({
         // The plugin's default products collection only has inventory + per-currency
         // price groups — no name/slug/description/images, so products were barely
         // editable and the storefront (/products/[slug]) couldn't resolve anything.
-        // Add the merchandising fields, replace the per-currency price groups with a
-        // single `price`, and keep every other default field (inventory, variants).
-        // Currencies are managed in Settings → Currencies.
-        productsCollectionOverride: ({ defaultCollection }) => {
-          const fields = defaultCollection.fields.filter((f) => !isCurrencyPriceGroup(f));
-          // Point the variants join columns at the new single-price field.
-          const variantsJoin = fields.find(
-            (f) => "name" in f && f.name === "variants" && "admin" in f
-          );
-          if (variantsJoin) {
-            (variantsJoin.admin as { defaultColumns?: string[] }).defaultColumns = [
-              "title",
-              "options",
-              "inventory",
-              "price",
-              "_status",
-            ];
-          }
-          return {
+        // Add the merchandising fields and keep every default field the plugin
+        // generates (inventory, priceInUSD/EUR/GBP).
+        productsCollectionOverride: ({ defaultCollection }) =>
+          withImportExportUI({
             ...defaultCollection,
             admin: {
               ...defaultCollection.admin,
               useAsTitle: "name",
-              defaultColumns: ["name", "slug", "price", "_status", "updatedAt"],
+              defaultColumns: ["name", "slug", "_status", "updatedAt"],
               listSearchableFields: ["name", "slug"],
             },
             fields: [
@@ -131,174 +152,12 @@ export default buildConfig({
                 relationTo: "media",
                 hasMany: true,
               },
-              {
-                type: "tabs",
-                tabs: [
-                  {
-                    label: "Pricing & Inventory",
-                    fields: [
-                      {
-                        name: "price",
-                        type: "number",
-                        required: true,
-                        min: 0,
-                        admin: {
-                          description:
-                            "In the site's default currency — set under Settings → Currencies.",
-                        },
-                      },
-                      {
-                        name: "cost",
-                        type: "number",
-                        min: 0,
-                        admin: { description: "Cost to your business (for profit calculation)." },
-                      },
-                      {
-                        name: "salePrice",
-                        type: "number",
-                        min: 0,
-                        admin: { description: "Discounted price if on sale. Leave empty for regular price." },
-                      },
-                      {
-                        name: "featured",
-                        type: "checkbox",
-                        defaultValue: false,
-                        admin: { description: "Show on homepage and featured sections." },
-                      },
-                    ],
-                  },
-                  {
-                    label: "Organization",
-                    fields: [
-                      {
-                        name: "category",
-                        type: "select",
-                        options: [
-                          { label: "Electronics", value: "electronics" },
-                          { label: "Clothing", value: "clothing" },
-                          { label: "Books", value: "books" },
-                          { label: "Home & Garden", value: "home" },
-                          { label: "Sports", value: "sports" },
-                          { label: "Other", value: "other" },
-                        ],
-                        admin: { description: "Product category." },
-                      },
-                      {
-                        name: "tags",
-                        type: "array",
-                        fields: [
-                          { name: "tag", type: "text", required: true },
-                        ],
-                        admin: { description: "Search and filtering tags." },
-                      },
-                      {
-                        name: "relatedProducts",
-                        type: "relationship",
-                        relationTo: "products",
-                        hasMany: true,
-                        admin: { description: "Products to show as recommendations." },
-                      },
-                    ],
-                  },
-                  {
-                    label: "Details",
-                    fields: [
-                      {
-                        name: "sku",
-                        type: "text",
-                        unique: true,
-                        admin: { description: "Stock keeping unit (must be unique)." },
-                      },
-                      {
-                        type: "group",
-                        name: "dimensions",
-                        label: "Dimensions & Weight",
-                        fields: [
-                          { name: "length", type: "number", admin: { description: "cm" } },
-                          { name: "width", type: "number", admin: { description: "cm" } },
-                          { name: "height", type: "number", admin: { description: "cm" } },
-                          { name: "weight", type: "number", admin: { description: "kg" } },
-                        ],
-                      },
-                      {
-                        name: "material",
-                        type: "text",
-                        admin: { description: "Primary material or composition." },
-                      },
-                      {
-                        name: "color",
-                        type: "text",
-                        admin: { description: "Color or available colors." },
-                      },
-                    ],
-                  },
-                  {
-                    label: "SEO",
-                    fields: [
-                      {
-                        name: "metaTitle",
-                        type: "text",
-                        maxLength: 60,
-                        admin: { description: "Search result title (60 chars max)." },
-                      },
-                      {
-                        name: "metaDescription",
-                        type: "textarea",
-                        maxLength: 160,
-                        admin: { description: "Search result description (160 chars max)." },
-                      },
-                      {
-                        name: "keywords",
-                        type: "textarea",
-                        admin: { description: "Comma-separated keywords for search." },
-                      },
-                    ],
-                  },
-                  {
-                    label: "Supplier",
-                    fields: [
-                      {
-                        name: "supplier",
-                        type: "text",
-                        admin: { description: "Supplier or vendor name." },
-                      },
-                      {
-                        name: "supplierSku",
-                        type: "text",
-                        admin: { description: "Supplier's product code." },
-                      },
-                      {
-                        name: "leadTime",
-                        type: "number",
-                        admin: { description: "Days to reorder from supplier." },
-                      },
-                    ],
-                  },
-                ],
-              },
-              ...fields,
-            ],
-          };
-        },
-        variants: {
-          // Same pricing simplification for variants: one `price` instead of the
-          // per-currency groups.
-          variantsCollectionOverride: ({ defaultCollection }) => ({
-            ...defaultCollection,
-            fields: [
-              ...defaultCollection.fields.filter((f) => !isCurrencyPriceGroup(f)),
-              {
-                name: "price",
-                type: "number",
-                min: 0,
-                admin: {
-                  description:
-                    "In the site's default currency — set under Settings → Currencies.",
-                },
-              },
+              ...defaultCollection.fields,
             ],
           }),
-        },
+      },
+      orders: {
+        ordersCollectionOverride: ({ defaultCollection }) => withImportExportUI(defaultCollection),
       },
       currencies: {
         supportedCurrencies: [USD, EUR, GBP],
