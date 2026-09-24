@@ -52,7 +52,7 @@ export const Blog: CollectionConfig = withImportExportUI({
                     label: "Width",
                     admin: {
                       description:
-                        "CSS width — e.g. 100%, 400px, 50vw. (Drag-to-resize planned.)",
+                        "CSS width — e.g. 100%, 400px, 50vw. Or drag the corner handle on the image.",
                     },
                   },
                 ],

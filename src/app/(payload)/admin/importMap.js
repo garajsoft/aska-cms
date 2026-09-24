@@ -39,6 +39,9 @@ import { Logo as Logo_a44df17d0fc3dcd873dae43dc3bf66bd } from '@/components/admi
 import { Icon as Icon_a44df17d0fc3dcd873dae43dc3bf66bd } from '@/components/admin/Logo'
 import { AskaDashboard as AskaDashboard_6c8508850fbfd548768fb9c5f4c275b6 } from '@/components/admin/dashboard/AskaDashboard'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
+// Hand-maintained: `generate:importmap` CLI crashes in this project
+// (ERR_REQUIRE_ASYNC_MODULE), so new admin components are added here by hand.
+import { RichTextStyles } from '@/components/admin/RichTextStyles'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
@@ -82,5 +85,6 @@ export const importMap = {
   "@/components/admin/Logo#Logo": Logo_a44df17d0fc3dcd873dae43dc3bf66bd,
   "@/components/admin/Logo#Icon": Icon_a44df17d0fc3dcd873dae43dc3bf66bd,
   "@/components/admin/dashboard/AskaDashboard#AskaDashboard": AskaDashboard_6c8508850fbfd548768fb9c5f4c275b6,
-  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
+  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
+  "@/components/admin/RichTextStyles#RichTextStyles": RichTextStyles
 }
