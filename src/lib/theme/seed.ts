@@ -596,7 +596,7 @@ const PRODUCTS_INDEX_TEMPLATE_HTML = `<main class="ax-shop">
         <a class="ax-shop-card__media" href="{{url}}"><img src="{{images.0.url}}" alt="{{name}}"></a>
         <div class="ax-shop-card__body">
           <h2><a href="{{url}}">{{name}}</a></h2>
-          <p class="ax-shop-card__price">\${{priceInUSD.priceInUSD}}</p>
+          <p class="ax-shop-card__price">\${{priceInUSD}}</p>
         </div>
       </article>
       {{/each}}
@@ -632,7 +632,7 @@ const PRODUCTS_DETAIL_TEMPLATE_HTML = `<main class="ax-product">
     </div>
     <div class="ax-product__info">
       <h1>{{name}}</h1>
-      <p class="ax-product__price">\${{priceInUSD.priceInUSD}}</p>
+      <p class="ax-product__price">\${{priceInUSD}}</p>
       <div class="ax-product__description">
         {{{description}}}
       </div>
@@ -1622,10 +1622,10 @@ async function seedProducts(payload: Payload, summary: ThemeSeedSummary) {
         slug: product.slug,
         description: product.description,
         inventory: product.inventory,
-        priceInUSD: {
-          priceInUSDEnabled: true,
-          priceInUSD: product.priceInUSD,
-        },
+        // The plugin's per-currency price groups are NAMELESS — their inner
+        // fields (priceInUSDEnabled / priceInUSD) sit directly on the product.
+        priceInUSDEnabled: true,
+        priceInUSD: product.priceInUSD,
         _status: "published",
       },
     });
