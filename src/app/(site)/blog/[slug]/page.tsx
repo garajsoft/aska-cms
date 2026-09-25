@@ -10,6 +10,7 @@ import { getBrandingAssets } from "@/lib/settings/repo";
 import { checkPrivateAccess } from "@/lib/auth/gate";
 import { postPasswordCookieName, isValidPostPasswordCookie } from "@/lib/auth/postPassword";
 import { renderCommentsSection } from "@/lib/comments/render";
+import { renderAreaHtml } from "@/lib/widgets/renderHtml";
 import { RenderedHtml } from "@/components/RenderedHtml";
 
 interface Props {
@@ -124,6 +125,7 @@ export default async function Page({ params, searchParams }: Props) {
 
   const settings = await getBrandingAssets();
   const commentsHtml = await renderCommentsSection(d.id);
+  const sidebarHtml = await renderAreaHtml("sidebar");
   const category =
     d.category && typeof d.category === "object" ? d.category : null;
   const context: Record<string, unknown> = {
@@ -139,17 +141,36 @@ export default async function Page({ params, searchParams }: Props) {
     tags: d.tags ?? [],
     featured: d.featured ?? false,
     commentsHtml,
+    sidebarHtml,
   };
 
   const template = await readTemplateForCollection("blog");
   if (!template) {
     return (
-      <div style={{ padding: 32, fontFamily: "sans-serif" }}>
-        <h1>{d.title}</h1>
-        <p style={{ color: "#a00" }}>
-          No template for the Blog collection yet. Create one under Theme → Templates.
-        </p>
-        <RenderedHtml html={commentsHtml} />
+      <div
+        style={{
+          padding: 32,
+          fontFamily: "sans-serif",
+          maxWidth: 1280,
+          margin: "0 auto",
+          display: "grid",
+          gridTemplateColumns: sidebarHtml ? "minmax(0,1fr) 300px" : "1fr",
+          gap: 32,
+          alignItems: "start",
+        }}
+      >
+        <div>
+          <h1>{d.title}</h1>
+          <p style={{ color: "#a00" }}>
+            No template for the Blog collection yet. Create one under Theme → Templates.
+          </p>
+          <RenderedHtml html={commentsHtml} />
+        </div>
+        {sidebarHtml && (
+          <aside>
+            <RenderedHtml html={sidebarHtml} />
+          </aside>
+        )}
       </div>
     );
   }

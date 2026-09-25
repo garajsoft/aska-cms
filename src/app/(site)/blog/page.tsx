@@ -7,6 +7,7 @@ import { readTemplateForCollection } from "@/lib/templates/repo";
 import { renderTemplate } from "@/lib/templates/render";
 import { flattenLexical } from "@/lib/templates/flatten";
 import { getBrandingAssets } from "@/lib/settings/repo";
+import { renderAreaHtml } from "@/lib/widgets/renderHtml";
 import { RenderedHtml } from "@/components/RenderedHtml";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +72,7 @@ export default async function BlogIndexPage({ searchParams }: Props) {
   });
 
   const settings = await getBrandingAssets();
+  const sidebarHtml = await renderAreaHtml("sidebar");
   const template = await readTemplateForCollection("blog", "index");
   if (template) {
     const context: Record<string, unknown> = {
@@ -80,6 +82,7 @@ export default async function BlogIndexPage({ searchParams }: Props) {
       categoryName,
       tagName: tag ?? "",
       settings,
+      sidebarHtml,
       paginationHtml: paginationHtml(page, totalPages, categorySlug, tag),
     };
     let rendered = renderTemplate(template.html, context);
@@ -101,22 +104,38 @@ export default async function BlogIndexPage({ searchParams }: Props) {
       ? `Tag: ${tag}`
       : "Blog";
   return (
-    <main style={{ maxWidth: 1024, margin: "2rem auto", padding: "0 1rem", fontFamily: "sans-serif" }}>
+    <main style={{ maxWidth: 1280, margin: "2rem auto", padding: "0 1rem", fontFamily: "sans-serif" }}>
       <h1>{heading}</h1>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 16 }}>
-        {items.map((post) => (
-          <Link
-            key={String(post.slug)}
-            href={`/blog/${String(post.slug)}`}
-            style={{ display: "block", padding: 16, border: "1px solid #e2e2e2", borderRadius: 8 }}
-          >
-            <h2 style={{ margin: "0 0 8px", fontSize: 18 }}>{String(post.title ?? "")}</h2>
-            {typeof post.excerpt === "string" && <p style={{ margin: 0, color: "#555" }}>{post.excerpt}</p>}
-          </Link>
-        ))}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: sidebarHtml ? "minmax(0,1fr) 300px" : "1fr",
+          gap: 32,
+          alignItems: "start",
+        }}
+      >
+        <div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 16 }}>
+            {items.map((post) => (
+              <Link
+                key={String(post.slug)}
+                href={`/blog/${String(post.slug)}`}
+                style={{ display: "block", padding: 16, border: "1px solid #e2e2e2", borderRadius: 8 }}
+              >
+                <h2 style={{ margin: "0 0 8px", fontSize: 18 }}>{String(post.title ?? "")}</h2>
+                {typeof post.excerpt === "string" && <p style={{ margin: 0, color: "#555" }}>{post.excerpt}</p>}
+              </Link>
+            ))}
+          </div>
+          {items.length === 0 && <p>No posts found.</p>}
+          <RenderedHtml html={paginationHtml(page, totalPages, categorySlug, tag)} />
+        </div>
+        {sidebarHtml && (
+          <aside>
+            <RenderedHtml html={sidebarHtml} />
+          </aside>
+        )}
       </div>
-      {items.length === 0 && <p>No posts found.</p>}
-      <RenderedHtml html={paginationHtml(page, totalPages, categorySlug, tag)} />
     </main>
   );
 }

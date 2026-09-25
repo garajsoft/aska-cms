@@ -488,16 +488,33 @@ const THEME_COMPONENTS: ThemeComponent[] = [
 /* {{{path}}} raw, dotted paths walk nested objects, {{#each path}} loops  */
 /* over array items. Detail pages receive the flattened doc (lexical       */
 /* fields as HTML strings) plus `settings`; the blog detail context        */
-/* carries {{{commentsHtml}}} and a normalized `categories` array. Index    */
-/* pages receive the flattened items (`posts` / `products`), each with a    */
-/* prebuilt `url`, plus `page`, `totalPages`, `categoryName` (blog) and     */
-/* `settings`; pagination renders through the `{{{paginationHtml}}}`       */
-/* placeholder. House-designs uses `{{#each designs}}`.                    */
+/* carries {{{commentsHtml}}} and {{{sidebarHtml}}}, plus a normalized     */
+/* `categories` array. Index pages receive the flattened items (`posts` /  */
+/* `products`), each with a prebuilt `url`, plus `page`, `totalPages`,     */
+/* `categoryName` (blog), `settings`, {{{sidebarHtml}}} (blog) and          */
+/* `{{{paginationHtml}}}`. House-designs uses `{{#each designs}}`.         */
 /* ----------------------------------------------------------------------- */
 
 const AX_TEMPLATE_BASE = `
 .ax-container{width:100%;max-width:var(--container-max);margin-inline:auto;padding-inline:calc(var(--spacing-unit)*4)}
 .ax-eyebrow{margin:0 0 calc(var(--spacing-unit)*3);font-size:.75rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--primary)}`;
+
+/* Sidebar + widget styles, shared by the blog index/detail templates. The
+   layout containers themselves (.ax-post-layout / .ax-blog-layout) are
+   defined per template. {{{sidebarHtml}}} renders as a flat sequence of
+   .ax-widget divs (src/lib/widgets/renderHtml.ts). */
+const AX_WIDGET_AREA_CSS = `
+.ax-sidebar{position:sticky;top:2rem}
+.ax-widget{margin-bottom:calc(var(--spacing-unit)*6)}
+.ax-widget-title{font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 calc(var(--spacing-unit)*3)}
+.ax-widget-list{list-style:none;margin:0;padding:0;display:grid;gap:calc(var(--spacing-unit)*2)}
+.ax-widget-list a{color:var(--ink);text-decoration:none}
+.ax-widget-list a:hover{color:var(--primary)}
+.ax-widget-search input{width:100%;padding:.7rem 1rem;border:1px solid var(--border);border-radius:var(--radius-md);font:inherit;background:#fff;color:var(--ink)}
+.ax-widget-form label{display:block;margin-bottom:calc(var(--spacing-unit)*2);font-size:.875rem;color:var(--ink)}
+.ax-widget-form input[type="text"],.ax-widget-form input[type="email"],.ax-widget-form select,.ax-widget-form textarea{width:100%;box-sizing:border-box;padding:.7rem 1rem;border:1px solid var(--border);border-radius:var(--radius-md);font:inherit;background:#fff;color:var(--ink);margin-top:.35rem}
+.ax-widget-form button{padding:.7rem 1.4rem;border:1px solid transparent;border-radius:var(--radius-md);background:var(--primary);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+@media (max-width:900px){.ax-post-layout,.ax-blog-layout{grid-template-columns:1fr}.ax-sidebar{position:static}}`;
 
 const BLOG_DETAIL_TEMPLATE_HTML = `<article class="ax-post">
   <header class="ax-post-hero">
@@ -507,15 +524,20 @@ const BLOG_DETAIL_TEMPLATE_HTML = `<article class="ax-post">
       <p class="ax-post-meta">{{publishedAt}} &middot; {{author.email}}</p>
     </div>
   </header>
-  <div class="ax-container ax-post-body">
-    {{{content}}}
-    <p class="ax-post-tags">{{tags}}</p>
-  </div>
-  <section class="ax-comments">
-    <div class="ax-container ax-comments__inner">
-      {{{commentsHtml}}}
+  <div class="ax-container ax-post-layout">
+    <div class="ax-post-main">
+      <div class="ax-post-body">
+        {{{content}}}
+        <p class="ax-post-tags">{{tags}}</p>
+      </div>
+      <section class="ax-comments">
+        <div class="ax-comments__inner">
+          {{{commentsHtml}}}
+        </div>
+      </section>
     </div>
-  </section>
+    <aside class="ax-sidebar">{{{sidebarHtml}}}</aside>
+  </div>
 </article>`;
 
 const BLOG_DETAIL_TEMPLATE_CSS = `${AX_TEMPLATE_BASE}
@@ -525,7 +547,8 @@ const BLOG_DETAIL_TEMPLATE_CSS = `${AX_TEMPLATE_BASE}
 .ax-post-cat{display:inline-block;padding:.35rem .9rem;border:1px solid rgba(250,250,249,.25);border-radius:999px;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:#fb7185}
 .ax-post-hero h1{margin:0;font-size:clamp(2rem,5vw,3.25rem);letter-spacing:-0.02em;line-height:1.1}
 .ax-post-meta{margin:calc(var(--spacing-unit)*4) 0 0;color:rgba(250,250,249,.65);font-size:.875rem}
-.ax-post-body{max-width:46rem;padding-block:calc(var(--spacing-unit)*12)}
+.ax-post-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:calc(var(--spacing-unit)*8);align-items:start;padding-block:calc(var(--spacing-unit)*12)}
+.ax-post-main{max-width:46rem;min-width:0}
 .ax-post-body p{line-height:1.8;color:rgba(24,24,27,.88);margin:0 0 1.4em}
 .ax-post-body h2{margin:2em 0 .8em;letter-spacing:-0.01em;line-height:1.25}
 .ax-post-body h3{margin:2em 0 .8em;letter-spacing:-0.01em}
@@ -533,8 +556,7 @@ const BLOG_DETAIL_TEMPLATE_CSS = `${AX_TEMPLATE_BASE}
 .ax-post-body img{max-width:100%;height:auto;border-radius:var(--radius-md)}
 .ax-post-body blockquote{border-left:3px solid var(--primary);margin:1.6em 0;padding:.2em 0 .2em 1.2em;color:var(--muted)}
 .ax-post-tags{margin:calc(var(--spacing-unit)*8) 0 0;padding-top:calc(var(--spacing-unit)*4);border-top:1px solid var(--border);font-size:.875rem;color:var(--muted)}
-.ax-comments{border-top:1px solid var(--border);padding-block:calc(var(--spacing-unit)*12)}
-.ax-comments__inner{max-width:46rem}`;
+.ax-comments{border-top:1px solid var(--border);padding-block:calc(var(--spacing-unit)*12)}${AX_WIDGET_AREA_CSS}`;
 
 const BLOG_INDEX_TEMPLATE_HTML = `<main class="ax-blog">
   <header class="ax-blog-hero">
@@ -543,20 +565,23 @@ const BLOG_INDEX_TEMPLATE_HTML = `<main class="ax-blog">
       <h1>Blog</h1>
     </div>
   </header>
-  <div class="ax-container ax-blog__body">
-    <div class="ax-post-grid">
-      {{#each posts}}
-      <article class="ax-post-card">
-        <a class="ax-post-card__media" href="{{url}}"><img src="{{coverImage.url}}" alt=""></a>
-        <div class="ax-post-card__body">
-          <p class="ax-post-card__meta">{{category.name}} &middot; {{publishedAt}}</p>
-          <h2><a href="{{url}}">{{title}}</a></h2>
-          <p>{{excerpt}}</p>
-        </div>
-      </article>
-      {{/each}}
+  <div class="ax-container ax-blog-layout">
+    <div class="ax-blog-main">
+      <div class="ax-post-grid">
+        {{#each posts}}
+        <article class="ax-post-card">
+          <a class="ax-post-card__media" href="{{url}}"><img src="{{coverImage.url}}" alt=""></a>
+          <div class="ax-post-card__body">
+            <p class="ax-post-card__meta">{{category.name}} &middot; {{publishedAt}}</p>
+            <h2><a href="{{url}}">{{title}}</a></h2>
+            <p>{{excerpt}}</p>
+          </div>
+        </article>
+        {{/each}}
+      </div>
+      <nav class="ax-pagination" aria-label="Pagination">{{{paginationHtml}}}</nav>
     </div>
-    <nav class="ax-pagination" aria-label="Pagination">{{{paginationHtml}}}</nav>
+    <aside class="ax-sidebar">{{{sidebarHtml}}}</aside>
   </div>
 </main>`;
 
@@ -564,7 +589,8 @@ const BLOG_INDEX_TEMPLATE_CSS = `${AX_TEMPLATE_BASE}
 .ax-blog-hero{border-bottom:1px solid var(--border);background:var(--paper);padding-block:calc(var(--spacing-unit)*10)}
 .ax-blog-hero h1{margin:0;font-size:clamp(2rem,4vw,3rem);letter-spacing:-0.02em;color:var(--ink)}
 .ax-blog-hero__cat{margin:0 0 .5rem;font-size:.875rem;font-weight:600;color:var(--primary)}
-.ax-blog__body{padding-block:calc(var(--spacing-unit)*10)}
+.ax-blog-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:calc(var(--spacing-unit)*8);align-items:start;padding-block:calc(var(--spacing-unit)*10)}
+.ax-blog-main{min-width:0}
 .ax-post-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--spacing-unit)*6)}
 .ax-post-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .2s ease,transform .2s ease}
 .ax-post-card:hover{box-shadow:var(--shadow);transform:translateY(-3px)}
@@ -580,7 +606,7 @@ const BLOG_INDEX_TEMPLATE_CSS = `${AX_TEMPLATE_BASE}
 .ax-pagination a,.ax-pagination span{padding:.6rem 1.2rem;border:1px solid var(--border);border-radius:var(--radius-md);background:#fff;color:var(--ink);text-decoration:none}
 .ax-pagination a:hover{border-color:var(--ink)}
 @media (max-width:900px){.ax-post-grid{grid-template-columns:repeat(2,1fr)}}
-@media (max-width:600px){.ax-post-grid{grid-template-columns:1fr}}`;
+@media (max-width:600px){.ax-post-grid{grid-template-columns:1fr}}${AX_WIDGET_AREA_CSS}`;
 
 const PRODUCTS_INDEX_TEMPLATE_HTML = `<main class="ax-shop">
   <header class="ax-shop-hero">
