@@ -386,18 +386,14 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   images?: (string | number | Media)[] | null;
-  priceInUSD?: {
-    priceInUSDEnabled?: boolean | null;
-    priceInUSD?: number | null;
-  } | null;
-  priceInEUR?: {
-    priceInEUREnabled?: boolean | null;
-    priceInEUR?: number | null;
-  } | null;
-  priceInGBP?: {
-    priceInGBPEnabled?: boolean | null;
-    priceInGBP?: number | null;
-  } | null;
+  // The plugin's per-currency price groups are nameless, so these fields sit
+  // flat on the product (columns price_in_u_s_d_enabled / price_in_u_s_d).
+  priceInUSDEnabled?: boolean | null;
+  priceInUSD?: number | null;
+  priceInEUREnabled?: boolean | null;
+  priceInEUR?: number | null;
+  priceInGBPEnabled?: boolean | null;
+  priceInGBP?: number | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
