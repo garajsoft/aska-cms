@@ -26,3 +26,34 @@ export function withUploadWidth<T extends { [key: string]: any; type?: string }>
     }) as HTMLConverters<T>["upload"],
   };
 }
+
+/**
+ * Lexical renders unknown `block` nodes through a generic placeholder, so the
+ * resolved oEmbed HTML our `embed` block stores never reaches the page. Wrap
+ * the default converters: an `embed` block whose `html` field is a non-empty
+ * string renders that HTML raw (it came from the provider's oEmbed response,
+ * resolved server-side at save time); anything else defers to the default
+ * block converter.
+ *
+ * Usage: converters: ({ defaultConverters }) => withEmbed(withUploadWidth(defaultConverters))
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function withEmbed<T extends { [key: string]: any; type?: string }>(
+  defaultConverters: HTMLConverters<T>
+): HTMLConverters<T> {
+  const block = (defaultConverters as Record<string, HTMLConverter | undefined>).block;
+  return {
+    ...defaultConverters,
+    block: ((args: { node: { fields?: { blockType?: unknown; html?: unknown } } }) => {
+      const fields = args.node.fields;
+      if (
+        fields?.blockType === "embed" &&
+        typeof fields.html === "string" &&
+        fields.html.trim()
+      ) {
+        return fields.html;
+      }
+      return (block as (a: unknown) => string)(args);
+    }) as HTMLConverters<T>["block"],
+  };
+}

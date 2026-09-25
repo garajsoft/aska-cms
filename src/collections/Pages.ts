@@ -4,6 +4,10 @@ import { CODE_FIELD_ADMIN } from "@/lib/adminFields/codeEditor";
 
 export const Pages: CollectionConfig = withImportExportUI({
   slug: "pages",
+  // Native Payload trash: delete in the admin UI sets deletedAt (soft delete)
+  // and the doc moves to the collection's Trash view; find/count/findByID
+  // automatically exclude trashed docs. Permanent delete is a separate action.
+  trash: true,
   admin: {
     useAsTitle: "title",
     defaultColumns: ["title", "metaDescription", "_status", "updatedAt"],
@@ -18,8 +22,8 @@ export const Pages: CollectionConfig = withImportExportUI({
   },
   versions: {
     drafts: {
-      autosave: false,
-      schedulePublish: false,
+      autosave: true,
+      schedulePublish: true,
     },
   },
   access: { read: () => true },

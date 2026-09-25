@@ -5,6 +5,7 @@ import config from "@/payload.config";
 import { readTemplateForCollection } from "@/lib/templates/repo";
 import { renderTemplate } from "@/lib/templates/render";
 import { getBrandingAssets } from "@/lib/settings/repo";
+import { flattenLexical } from "@/lib/templates/flatten";
 import { RenderedHtml } from "@/components/RenderedHtml";
 
 interface Props {
@@ -69,7 +70,10 @@ export default async function Page({ params }: Props) {
     );
   }
   const settings = await getBrandingAssets();
-  const rendered = renderTemplate(template.html, { ...(doc as Record<string, unknown>), settings });
+  const rendered = renderTemplate(template.html, {
+    ...flattenLexical(doc as unknown as Record<string, unknown>),
+    settings,
+  });
   return (
     <>
       {template.css && <style dangerouslySetInnerHTML={{ __html: template.css }} />}

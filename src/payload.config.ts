@@ -2,6 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { buildConfig } from "payload";
 import { postgresAdapter } from "@payloadcms/db-postgres";
+import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { ecommercePlugin, USD, EUR, GBP } from "@payloadcms/plugin-ecommerce";
 import { stripeAdapter } from "@payloadcms/plugin-ecommerce/payments/stripe";
@@ -9,6 +10,9 @@ import sharp from "sharp";
 
 import { Pages } from "./collections/Pages";
 import { Blog } from "./collections/Blog";
+import { Categories } from "./collections/Categories";
+import { Comments } from "./collections/Comments";
+import { Menus } from "./collections/Menus";
 import { Users } from "./collections/Users";
 import { Media } from "./collections/Media";
 import { Templates } from "./collections/Templates";
@@ -21,11 +25,30 @@ import { CodeSnippets } from "./collections/CodeSnippets";
 import { PageViews } from "./collections/PageViews";
 import { Settings } from "./globals/Settings";
 import { ThemeBuilder } from "./globals/ThemeBuilder";
+import { Widgets } from "./globals/Widgets";
 import { isSignedIn } from "./lib/auth/isSignedIn";
 import { withImportExportUI } from "./lib/importExport/withImportExportUI";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
+
+// Outbound email is optional: with no SMTP_HOST the adapter is omitted entirely
+// and Payload falls back to its built-in no-op, so dev/builds never break.
+const email = process.env.SMTP_HOST
+  ? nodemailerAdapter({
+      transportOptions: {
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT || 587),
+        secure: process.env.SMTP_SECURE === "true",
+        auth: process.env.SMTP_USER
+          ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS || "" }
+          : undefined,
+      },
+      defaultFromAddress: process.env.EMAIL_FROM || "no-reply@aska.local",
+      defaultFromName: "aska CMS",
+      skipVerify: true,
+    })
+  : undefined;
 
 export default buildConfig({
   admin: {
@@ -54,6 +77,9 @@ export default buildConfig({
   collections: [
     Pages,
     Blog,
+    Categories,
+    Comments,
+    Menus,
     Templates,
     Components,
     Styles,
@@ -65,7 +91,12 @@ export default buildConfig({
     Users,
     Media,
   ],
-  globals: [Settings, ThemeBuilder],
+  globals: [Settings, ThemeBuilder, Widgets],
+  // Runs the internal schedulePublish task queued by Pages/Blog's
+  // schedulePublish: true. Needs a long-running Node process — on serverless
+  // platforms, cron-hit POST /api/payload-jobs/run instead and drop autoRun.
+  jobs: { autoRun: [{ queue: "default", cron: "* * * * *" }] },
+  email,
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },

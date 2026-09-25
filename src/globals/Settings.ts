@@ -81,6 +81,28 @@ export const Settings: GlobalConfig = {
           ],
         },
         {
+          label: "Navigation",
+          description: "Menus rendered in the site header and footer.",
+          fields: [
+            {
+              name: "primaryMenu",
+              type: "relationship",
+              relationTo: "menus",
+              admin: {
+                description: "Main header navigation — build it in the Menus collection.",
+              },
+            },
+            {
+              name: "footerMenu",
+              type: "relationship",
+              relationTo: "menus",
+              admin: {
+                description: "Footer link columns / bottom bar links.",
+              },
+            },
+          ],
+        },
+        {
           label: "Dashboard",
           fields: [
             {

@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getPayload } from "payload";
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html";
-import { withUploadWidth } from "@/lib/richtext/converters";
+import { withEmbed, withUploadWidth } from "@/lib/richtext/converters";
 import config from "@/payload.config";
 import { checkPrivateAccess } from "@/lib/auth/gate";
 import { readTemplateForCollection } from "@/lib/templates/repo";
@@ -36,7 +36,7 @@ function flattenDescription(doc: Record<string, unknown>): Record<string, unknow
     description: convertLexicalToHTML({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: description as any,
-      converters: ({ defaultConverters }) => withUploadWidth(defaultConverters),
+      converters: ({ defaultConverters }) => withEmbed(withUploadWidth(defaultConverters)),
     }),
   };
 }
@@ -89,7 +89,7 @@ export default async function HouseDesignPage({ params }: Props) {
 
   const settings = await getBrandingAssets();
   const rendered = renderTemplate(template.html, {
-    ...flattenDescription(doc as Record<string, unknown>),
+    ...flattenDescription(doc as unknown as Record<string, unknown>),
     settings,
   });
 

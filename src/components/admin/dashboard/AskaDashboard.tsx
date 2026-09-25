@@ -2,6 +2,7 @@ import "server-only";
 import Link from "next/link";
 import { getPayload } from "payload";
 import config from "@/payload.config";
+import { getCommentStats, type CommentStats } from "@/lib/comments/stats";
 
 /**
  * Renders above Payload's default dashboard cards via admin.components.beforeDashboard.
@@ -38,6 +39,14 @@ async function loadFormStats(): Promise<{ submissions: number; forms: number } |
       payload.count({ collection: "forms" }),
     ]);
     return { submissions: submissions.totalDocs, forms: forms.totalDocs };
+  } catch {
+    return null;
+  }
+}
+
+async function loadCommentStats(): Promise<CommentStats | null> {
+  try {
+    return await getCommentStats();
   } catch {
     return null;
   }
@@ -204,11 +213,12 @@ function Widget({
 
 export const AskaDashboard = async () => {
   const enabled = await loadEnabledWidgets();
-  const [formStats, trafficSeries, visitorsTotal, conversions] = await Promise.all([
+  const [formStats, trafficSeries, visitorsTotal, conversions, commentStats] = await Promise.all([
     enabled.has("form_submissions") ? loadFormStats() : null,
     enabled.has("site_traffic") ? loadTrafficSeries() : null,
     enabled.has("site_traffic") ? loadVisitorsTotal() : null,
     enabled.has("conversions") ? loadConversions() : null,
+    enabled.has("comments") ? loadCommentStats() : null,
   ]);
 
   return (
@@ -262,7 +272,15 @@ export const AskaDashboard = async () => {
           />
         )}
         {enabled.has("comments") && (
-          <Widget title="Comments" value="—" hint="no comments collection yet" />
+          <Widget
+            title="Comments"
+            value={commentStats ? commentStats.total : "—"}
+            hint={
+              commentStats
+                ? `${commentStats.pending} pending · ${commentStats.approved} approved · ${commentStats.spam} spam`
+                : "unavailable"
+            }
+          />
         )}
       </div>
     </section>

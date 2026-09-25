@@ -1,15 +1,21 @@
 import type { CollectionConfig } from "payload";
 import {
+  BlocksFeature,
   FixedToolbarFeature,
   InlineToolbarFeature,
   lexicalEditor,
   UploadFeature,
 } from "@payloadcms/richtext-lexical";
 import { withImportExportUI } from "@/lib/importExport/withImportExportUI";
+import { embedBlock } from "@/lib/richtext/embedBlock";
 
 export const Blog: CollectionConfig = withImportExportUI({
   slug: "blog",
   labels: { singular: "Blog Post", plural: "Blog Posts" },
+  // Native Payload trash: delete in the admin UI sets deletedAt (soft delete)
+  // and the doc moves to the collection's Trash view; find/count/findByID
+  // automatically exclude trashed docs. Permanent delete is a separate action.
+  trash: true,
   admin: {
     useAsTitle: "title",
     defaultColumns: ["title", "slug", "publishedAt", "_status", "updatedAt"],
@@ -21,9 +27,8 @@ export const Blog: CollectionConfig = withImportExportUI({
     },
   },
   access: { read: () => true },
-  versions: { drafts: { autosave: false, schedulePublish: false } },
+  versions: { drafts: { autosave: true, schedulePublish: true } },
   fields: [
-    // Main column (large, on the right in Payload's split view).
     { name: "title", type: "text", required: true },
     {
       name: "content",
@@ -39,6 +44,7 @@ export const Blog: CollectionConfig = withImportExportUI({
           ...defaultFeatures,
           FixedToolbarFeature(),
           InlineToolbarFeature(),
+          BlocksFeature({ blocks: [embedBlock] }),
           UploadFeature({
             enabledCollections: ["media"],
             collections: {
@@ -70,6 +76,47 @@ export const Blog: CollectionConfig = withImportExportUI({
       unique: true,
       index: true,
       admin: { position: "sidebar", description: "URL segment: /blog/<slug>." },
+    },
+    {
+      name: "category",
+      type: "relationship",
+      relationTo: "categories",
+      admin: { position: "sidebar" },
+    },
+    {
+      name: "tags",
+      type: "text",
+      hasMany: true,
+      admin: { position: "sidebar", description: "Press Enter to add each tag." },
+    },
+    {
+      name: "featured",
+      type: "checkbox",
+      defaultValue: false,
+      admin: {
+        position: "sidebar",
+        description: "Pin this post as sticky/featured.",
+      },
+    },
+    {
+      name: "visibility",
+      type: "select",
+      defaultValue: "public",
+      options: [
+        { label: "Public", value: "public" },
+        { label: "Password protected", value: "password" },
+        { label: "Private (admins only)", value: "private" },
+      ],
+      admin: { position: "sidebar" },
+    },
+    {
+      name: "postPassword",
+      type: "text",
+      admin: {
+        position: "sidebar",
+        description: "Required when visibility is password protected.",
+        condition: (_data, siblingData) => siblingData?.visibility === "password",
+      },
     },
     {
       name: "excerpt",

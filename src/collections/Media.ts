@@ -6,7 +6,15 @@ export const Media: CollectionConfig = {
   // Must match the persistent volume mounted in Coolify at /app/public/media
   // (relative to cwd, which is /app at runtime) - without this, uploads
   // default to /app/media, an unmounted path wiped on every deploy.
-  upload: { staticDir: "public/media" },
+  upload: {
+    staticDir: "public/media",
+    focalPoint: true,
+    imageSizes: [
+      { name: "thumbnail", width: 400 },
+      { name: "card", width: 800 },
+      { name: "hero", width: 1600 },
+    ],
+  },
   fields: [
     {
       name: "alt",

@@ -19,7 +19,7 @@ export interface FieldMeta {
 
 async function fieldsForCollection(slug: string): Promise<FieldMeta[]> {
   const p = await getPayload({ config });
-  const coll = p.collections[slug];
+  const coll = p.collections[slug as keyof typeof p.collections];
   if (!coll) return [];
   const out: FieldMeta[] = [];
   const visit = (fields: unknown[]) => {

@@ -2,10 +2,13 @@ import "server-only";
 import { getPayload } from "payload";
 import config from "@/payload.config";
 
+export type TemplateKind = "detail" | "index";
+
 export interface Template {
   id: string | number;
   name: string;
   collectionSlug: string;
+  kind: TemplateKind;
   html: string;
   css: string;
 }
@@ -18,6 +21,7 @@ function mapDoc(doc: {
   id: string | number;
   name: string;
   collection: string;
+  kind?: string | null;
   html?: string | null;
   css?: string | null;
 }): Template {
@@ -25,18 +29,22 @@ function mapDoc(doc: {
     id: doc.id,
     name: doc.name,
     collectionSlug: doc.collection,
+    kind: doc.kind === "index" ? "index" : "detail",
     html: doc.html ?? "",
     css: doc.css ?? "",
   };
 }
 
 export async function readTemplateForCollection(
-  collectionSlug: string
+  collectionSlug: string,
+  kind: TemplateKind = "detail"
 ): Promise<Template | null> {
   const p = await payload();
   const r = await p.find({
     collection: "templates",
-    where: { collection: { equals: collectionSlug } },
+    where: {
+      and: [{ collection: { equals: collectionSlug } }, { kind: { equals: kind } }],
+    },
     limit: 1,
     depth: 0,
   });

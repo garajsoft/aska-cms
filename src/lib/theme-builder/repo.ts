@@ -1,6 +1,7 @@
 import "server-only";
 import { getPayload } from "payload";
 import config from "@/payload.config";
+import type { ThemeBuilder } from "@/payload-types";
 
 export type ThemeSlotMode = "DEFAULT_COMPONENT" | "SAVED_TEMPLATE" | "CUSTOM_BUILD" | "NONE";
 
@@ -127,5 +128,8 @@ export async function updateThemeSlotContent(input: {
       ? { ...rule, [input.slot]: { ...rule[input.slot], html: input.html, css: input.css } }
       : rule
   );
-  await p.updateGlobal({ slug: "theme-builder", data: { customRules: updatedRules } });
+  await p.updateGlobal({
+    slug: "theme-builder",
+    data: { customRules: updatedRules as ThemeBuilder["customRules"] },
+  });
 }
