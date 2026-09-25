@@ -1269,9 +1269,17 @@ async function seedComponents(payload: Payload, summary: ThemeSeedSummary) {
 
 async function seedTemplates(payload: Payload, summary: ThemeSeedSummary) {
   for (const template of THEME_TEMPLATES) {
+    // Key on (collection, kind) — the pair is unique per the collection hook.
+    // A template a user created under any name still gets converged to the
+    // theme's content rather than aborting the seed.
     const found = await payload.find({
       collection: "templates",
-      where: { name: { equals: template.name } },
+      where: {
+        and: [
+          { collection: { equals: template.collection } },
+          { kind: { equals: template.kind } },
+        ],
+      },
       limit: 1,
       depth: 0,
     });
@@ -1288,12 +1296,8 @@ async function seedTemplates(payload: Payload, summary: ThemeSeedSummary) {
       await payload.create({ collection: "templates", data: { ...template } });
       track(summary, "created", `template:${template.name}`);
     } catch (err) {
-      // On a pre-`kind` schema Templates.collection is still unique, so only
-      // one template per collection can exist. The detail variant (seeded
-      // first, above) is the one the [slug] routes render — skip the index
-      // variant there instead of failing the whole seed.
-      if (err instanceof Error && /unique/i.test(err.message)) {
-        track(summary, "skipped", `template:${template.name} (collection column still unique — kind field not in schema yet)`);
+      if (err instanceof Error && /unique|already exists/i.test(err.message)) {
+        track(summary, "skipped", `template:${template.name} (${err.message})`);
       } else {
         throw err;
       }
