@@ -3,12 +3,21 @@ import Link from "next/link";
 import { getPayload } from "payload";
 import config from "@/payload.config";
 import { getBrandingAssets } from "@/lib/settings/repo";
+import { getActiveTheme } from "@/lib/themes/repo";
 import type { Link as MenuLink, Page, Blog } from "@/payload-types";
 
 async function fetchPrimaryMenu(): Promise<MenuLink[] | null> {
   const p = await getPayload({ config });
-  const settings = await p.findGlobal({ slug: "settings", depth: 2 });
-  const menu = (settings as { primaryMenu?: unknown }).primaryMenu;
+  const [settings, activeTheme] = await Promise.all([
+    p.findGlobal({ slug: "settings", depth: 2 }),
+    getActiveTheme(),
+  ]);
+  let menu: unknown = (settings as { primaryMenu?: unknown }).primaryMenu;
+  // Active theme's menu wins; fall back to Settings → Navigation.
+  const themeMenu = activeTheme?.primaryMenu;
+  if (typeof themeMenu === "number" || typeof themeMenu === "string") {
+    menu = await p.findByID({ collection: "menus", id: themeMenu, depth: 2 }).catch(() => null);
+  }
   if (!menu || typeof menu !== "object") return null;
   const items = (menu as { items?: MenuLink[] | null }).items;
   return Array.isArray(items) && items.length > 0 ? items : null;
@@ -26,10 +35,11 @@ function itemHref(item: MenuLink): string | null {
 }
 
 /**
- * DEFAULT_COMPONENT for the header slot. Renders Settings → Navigation →
- * Primary Menu (built in the Menus collection) as the main nav, with one
- * level of hover dropdowns from each item's children. Falls back to the
- * plain brand mark when no menu is assigned.
+ * DEFAULT_COMPONENT for the header slot. Renders the active theme's Primary
+ * Menu (or Settings → Navigation → Primary Menu when the theme doesn't
+ * override it) as the main nav, with one level of hover dropdowns from each
+ * item's children. Falls back to the plain brand mark when no menu is
+ * assigned.
  */
 export async function Header() {
   const [{ logoLight }, items] = await Promise.all([getBrandingAssets(), fetchPrimaryMenu()]);

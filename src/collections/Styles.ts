@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionConfig, Where } from "payload";
 import { isContentManager } from "@/lib/auth/roles";
 import { withImportExportUI } from "@/lib/importExport/withImportExportUI";
 
@@ -49,7 +49,7 @@ export const Styles: CollectionConfig = withImportExportUI({
   admin: {
     group: "Theme",
     useAsTitle: "name",
-    defaultColumns: ["name", "category", "slug", "updatedAt"],
+    defaultColumns: ["name", "category", "slug", "theme", "updatedAt"],
     description:
       "Design tokens exposed as CSS custom properties (--{slug} for Color/Spacing/Radius, --{property}-{slug} for Typography) on the site and in the GrapesJS canvas.",
   },
@@ -72,6 +72,38 @@ export const Styles: CollectionConfig = withImportExportUI({
         return data;
       },
     ],
+    beforeChange: [
+      async ({ req, operation, data, originalDoc }) => {
+        // Themes reuse token slugs across sets (a slug IS the CSS variable
+        // name), so uniqueness is per (slug, theme) — enforced here, with
+        // untagged tokens counting as one shared theme.
+        const slug = data?.slug ?? originalDoc?.slug;
+        if (!slug) return data;
+        const theme = data?.theme !== undefined ? data.theme : originalDoc?.theme;
+        const themeClause: Where =
+          theme == null ? { theme: { exists: false } } : { theme: { equals: theme } };
+        const existing = await req.payload.find({
+          collection: "styles",
+          where: {
+            and: [
+              { slug: { equals: slug } },
+              themeClause,
+              ...(operation === "update" && originalDoc?.id != null
+                ? [{ id: { not_equals: originalDoc.id } }]
+                : []),
+            ],
+          },
+          limit: 1,
+          depth: 0,
+        });
+        if (existing.docs.length > 0) {
+          throw new Error(
+            `A token with slug "${slug}" already exists in this theme — one token per slug and theme.`
+          );
+        }
+        return data;
+      },
+    ],
   },
   fields: [
     { name: "name", type: "text", required: true },
@@ -79,11 +111,10 @@ export const Styles: CollectionConfig = withImportExportUI({
       name: "slug",
       type: "text",
       required: true,
-      unique: true,
       index: true,
       admin: {
         description:
-          "CSS variable name (without --). Auto-filled from name if left blank, e.g. 'color-primary'.",
+          "CSS variable name (without --). Auto-filled from name if left blank, e.g. 'color-primary'. Unique per theme.",
       },
     },
     {
@@ -197,6 +228,12 @@ export const Styles: CollectionConfig = withImportExportUI({
         description: "e.g. 8px, or 0 4px 12px rgba(0,0,0,.1) for a shadow.",
         condition: isCategory("Border Radius & Shadow"),
       },
+    },
+    {
+      name: "theme",
+      type: "relationship",
+      relationTo: "themes",
+      admin: { position: "sidebar", description: "Leave empty to share across all themes." },
     },
   ],
 });

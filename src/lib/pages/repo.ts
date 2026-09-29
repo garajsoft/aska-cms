@@ -1,6 +1,7 @@
 import "server-only";
 import { getPayload, type Where } from "payload";
 import config from "@/payload.config";
+import { preferred, themeFilter, themeScope } from "@/lib/themes/repo";
 
 export interface PageContent {
   id: string | number;
@@ -24,7 +25,14 @@ function shareImageUrl(shareImage: unknown): string | null {
 
 export async function listPages(): Promise<PageContent[]> {
   const p = await payload();
-  const r = await p.find({ collection: "pages", limit: 200, depth: 1, sort: "slug" });
+  const { activeThemeId } = await themeScope();
+  const r = await p.find({
+    collection: "pages",
+    limit: 200,
+    depth: 1,
+    sort: "slug",
+    ...(activeThemeId != null ? { where: themeFilter(activeThemeId) } : {}),
+  });
   return r.docs.map((d) => ({
     id: d.id,
     title: d.title,
@@ -41,17 +49,21 @@ export async function readPage(
   opts: { publishedOnly?: boolean } = {}
 ): Promise<PageContent | null> {
   const p = await payload();
-  const where: Where = opts.publishedOnly
+  const { activeThemeId } = await themeScope();
+  const base: Where = opts.publishedOnly
     ? { slug: { equals: slug }, _status: { equals: "published" } }
     : { slug: { equals: slug } };
+  const where: Where = {
+    and: [base, ...(activeThemeId != null ? [themeFilter(activeThemeId)] : [])],
+  };
   const r = await p.find({
     collection: "pages",
     where,
-    limit: 1,
+    limit: 5,
     depth: 1,
     draft: !opts.publishedOnly,
   });
-  const doc = r.docs[0];
+  const doc = preferred(r.docs, activeThemeId);
   if (!doc) return null;
   return {
     id: doc.id,
@@ -71,13 +83,27 @@ export async function upsertPage(input: {
   css?: string;
 }): Promise<PageContent> {
   const p = await payload();
-  const existing = await p.find({
+  const { activeThemeId } = await themeScope();
+  const scoped = await p.find({
     collection: "pages",
-    where: { slug: { equals: input.slug } },
+    where: {
+      and: [
+        { slug: { equals: input.slug } },
+        ...(activeThemeId != null ? [themeFilter(activeThemeId)] : []),
+      ],
+    },
+    limit: 5,
+    depth: 1,
+  });
+  // Fall back to the shared (untagged) page with this slug so editing it via
+  // the editor doesn't try to recreate it and hit the unique-slug constraint.
+  const shared = await p.find({
+    collection: "pages",
+    where: { and: [{ slug: { equals: input.slug } }, { theme: { exists: false } }] },
     limit: 1,
     depth: 1,
   });
-  const current = existing.docs[0];
+  const current = preferred([...scoped.docs, ...shared.docs], activeThemeId);
   if (current) {
     const u = await p.update({
       collection: "pages",
@@ -105,6 +131,7 @@ export async function upsertPage(input: {
       slug: input.slug,
       html: input.html ?? "",
       css: input.css ?? "",
+      ...(activeThemeId != null ? { theme: activeThemeId } : {}),
     },
   });
   return {

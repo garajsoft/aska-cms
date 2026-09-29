@@ -82,6 +82,12 @@ export const Components: CollectionConfig = withImportExportUI({
     { name: "css", type: "code", admin: { language: "css", ...CODE_FIELD_ADMIN } },
     { name: "js", type: "code", admin: { language: "javascript", ...CODE_FIELD_ADMIN } },
     {
+      name: "theme",
+      type: "relationship",
+      relationTo: "themes",
+      admin: { position: "sidebar", description: "Leave empty to share across all themes." },
+    },
+    {
       type: "ui",
       name: "componentPreview",
       admin: {

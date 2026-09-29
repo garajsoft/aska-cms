@@ -12,8 +12,24 @@ import {
 
 export async function getHomepageSlug(): Promise<string | null> {
   const p = await getPayload({ config });
-  const s = await p.findGlobal({ slug: "settings", depth: 1 });
-  const hp = (s as { homepage?: { slug?: string } | number | string | null }).homepage;
+  // depth 1 on the theme so its homepage relationship resolves to a slug.
+  const [s, theme] = await Promise.all([
+    p.findGlobal({ slug: "settings", depth: 1 }),
+    p
+      .find({ collection: "themes", where: { active: { equals: true } }, limit: 1, depth: 1 })
+      .catch(() => null),
+  ]);
+  const themeHomepage = theme?.docs[0]?.homepage as
+    | { slug?: string }
+    | number
+    | string
+    | null
+    | undefined;
+  // Active theme's homepage wins; fall back to Settings → General.
+  const hp =
+    themeHomepage && typeof themeHomepage === "object"
+      ? themeHomepage
+      : ((s as { homepage?: { slug?: string } | number | string | null }).homepage ?? null);
   if (!hp || typeof hp !== "object") return null;
   return hp.slug ?? null;
 }

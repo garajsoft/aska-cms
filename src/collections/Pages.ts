@@ -10,7 +10,7 @@ export const Pages: CollectionConfig = withImportExportUI({
   trash: true,
   admin: {
     useAsTitle: "title",
-    defaultColumns: ["title", "metaDescription", "_status", "updatedAt"],
+    defaultColumns: ["title", "metaDescription", "_status", "theme", "updatedAt"],
     components: {
       edit: {
         beforeDocumentControls: [
@@ -71,6 +71,12 @@ export const Pages: CollectionConfig = withImportExportUI({
       name: "css",
       type: "code",
       admin: { language: "css", description: "CSS from GrapesJS.", ...CODE_FIELD_ADMIN },
+    },
+    {
+      name: "theme",
+      type: "relationship",
+      relationTo: "themes",
+      admin: { position: "sidebar", description: "Leave empty to share across all themes." },
     },
   ],
 });

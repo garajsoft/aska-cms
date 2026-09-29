@@ -15,7 +15,7 @@
  * references.
  */
 
-import type { Payload } from "payload";
+import type { Payload, Where } from "payload";
 import type { Widgets } from "@/payload-types";
 
 export interface ThemeSeedSummary {
@@ -130,6 +130,49 @@ const STYLE_TOKENS = [
     slug: "container-max",
     category: "Spacing / Container",
     spacingValue: "72rem",
+  },
+] as const;
+
+/* Nocturne twins of the tokens above. Same slugs (the CSS variable names the
+   theme CSS references — swapping the active theme swaps the values behind
+   --ink / --paper / …), same categories, dark-scheme values. The two sets are
+   told apart by their `theme` relationship, not by slug. */
+const NOCTURNE_STYLE_TOKENS = [
+  { name: "Ink Nocturne", slug: "ink", category: "Color", colorValue: "#f4f4f5" },
+  { name: "Paper Nocturne", slug: "paper", category: "Color", colorValue: "#111113" },
+  { name: "Primary Nocturne", slug: "primary", category: "Color", colorValue: "#a3e635" },
+  { name: "Muted Nocturne", slug: "muted", category: "Color", colorValue: "#a1a1aa" },
+  { name: "Border Nocturne", slug: "border", category: "Color", colorValue: "#27272a" },
+  { name: "Accent Nocturne", slug: "accent", category: "Color", colorValue: "#22d3ee" },
+  {
+    name: "Radius MD Nocturne",
+    slug: "radius-md",
+    category: "Border Radius & Shadow",
+    radiusShadowValue: "10px",
+  },
+  {
+    name: "Radius LG Nocturne",
+    slug: "radius-lg",
+    category: "Border Radius & Shadow",
+    radiusShadowValue: "18px",
+  },
+  {
+    name: "Shadow Nocturne",
+    slug: "shadow",
+    category: "Border Radius & Shadow",
+    radiusShadowValue: "0 20px 50px rgba(0,0,0,.5)",
+  },
+  {
+    name: "Spacing Unit Nocturne",
+    slug: "spacing-unit",
+    category: "Spacing / Container",
+    spacingValue: "0.5rem",
+  },
+  {
+    name: "Container Max Nocturne",
+    slug: "container-max",
+    category: "Spacing / Container",
+    spacingValue: "70rem",
   },
 ] as const;
 
@@ -774,6 +817,187 @@ const THEME_TEMPLATES: ThemeTemplate[] = [
 ];
 
 /* ----------------------------------------------------------------------- */
+/* Nocturne collection templates                                            */
+/*                                                                         */
+/* Same placeholder contract and mostly the same ax-* class vocabulary as  */
+/* the Editorial templates above (so the shared pattern CSS habits apply), */
+/* but visually restructured for the dark theme: the blog index becomes a  */
+/* ruled list instead of a card grid, the blog detail carries a slim left  */
+/* border accent and roomier "serif-feel" spacing, and the products index  */
+/* becomes a two-column feature list. All colors flow through the tokens — */
+/* --paper is the dark background here, --ink the near-white text — with   */
+/* axn-* classes for the structural touches that are genuinely Nocturne.   */
+/* ----------------------------------------------------------------------- */
+
+const AXN_RULE_CSS = `
+.axn-rule{height:1px;background:var(--border)}`;
+
+/* Dark-scheme overrides for the shared widget-area styles (the Editorial
+   originals hardcode white input backgrounds). Appended after
+   AX_WIDGET_AREA_CSS so equal-specificity rules win by order. */
+const AXN_WIDGET_INPUT_CSS = `
+.ax-widget-search input,.ax-widget-form input[type="text"],.ax-widget-form input[type="email"],.ax-widget-form select,.ax-widget-form textarea{background:var(--paper);color:var(--ink)}
+.ax-widget-form button{color:#111113}`;
+
+const NOCTURNE_BLOG_INDEX_TEMPLATE_HTML = `<main class="ax-blog">
+  <header class="axn-blog-hero">
+    <div class="ax-container">
+      <p class="ax-eyebrow">{{categoryName}}</p>
+      <h1>The Night Desk</h1>
+      <div class="axn-rule"></div>
+    </div>
+  </header>
+  <div class="ax-container ax-blog-layout">
+    <div class="ax-blog-main">
+      <div class="axn-post-list">
+        {{#each posts}}
+        <article class="axn-post-row">
+          <p class="axn-post-row__meta">{{category.name}} &middot; {{publishedAt}}</p>
+          <h2><a href="{{url}}">{{title}}</a></h2>
+          <p class="axn-post-row__excerpt">{{excerpt}}</p>
+        </article>
+        {{/each}}
+      </div>
+      <nav class="ax-pagination" aria-label="Pagination">{{{paginationHtml}}}</nav>
+    </div>
+    <aside class="ax-sidebar">{{{sidebarHtml}}}</aside>
+  </div>
+</main>`;
+
+const NOCTURNE_BLOG_INDEX_TEMPLATE_CSS = `${AX_TEMPLATE_BASE}${AXN_RULE_CSS}
+.axn-blog-hero{background:var(--paper);color:var(--ink);padding-block:calc(var(--spacing-unit)*10)}
+.axn-blog-hero h1{margin:0;font-size:clamp(2rem,4vw,3rem);letter-spacing:-0.02em;font-weight:500;color:var(--ink)}
+.axn-blog-hero .axn-rule{margin-top:calc(var(--spacing-unit)*5)}
+.ax-blog-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:calc(var(--spacing-unit)*8);align-items:start;padding-block:calc(var(--spacing-unit)*10)}
+.ax-blog-main{min-width:0}
+.axn-post-list{border-top:1px solid var(--border)}
+.axn-post-row{padding-block:calc(var(--spacing-unit)*5);border-bottom:1px solid var(--border)}
+.axn-post-row__meta{margin:0;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.axn-post-row h2{margin:calc(var(--spacing-unit)*2) 0 0;font-size:clamp(1.25rem,2.5vw,1.625rem);letter-spacing:-0.01em;font-weight:500}
+.axn-post-row h2 a{color:var(--ink);text-decoration:none}
+.axn-post-row h2 a:hover{color:var(--primary)}
+.axn-post-row__excerpt{margin:calc(var(--spacing-unit)*2) 0 0;font-size:.9375rem;line-height:1.7;color:var(--muted);max-width:60ch}
+.ax-pagination{display:flex;align-items:center;justify-content:center;gap:calc(var(--spacing-unit)*3);margin-top:calc(var(--spacing-unit)*10);font-size:.875rem;color:var(--muted)}
+.ax-pagination a,.ax-pagination span{padding:.6rem 1.2rem;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--paper);color:var(--ink);text-decoration:none}
+.ax-pagination a:hover{border-color:var(--ink)}${AX_WIDGET_AREA_CSS}${AXN_WIDGET_INPUT_CSS}`;
+
+/* Detail pages reuse the Editorial markup unchanged — the Nocturne look is
+   carried entirely by the CSS below (vars plus a slim accent border on the
+   article column and roomier line-height). */
+const NOCTURNE_BLOG_DETAIL_TEMPLATE_CSS = `${AX_TEMPLATE_BASE}
+.ax-post-hero{background:var(--paper);color:var(--ink);padding-block:calc(var(--spacing-unit)*14);border-bottom:1px solid var(--border)}
+.ax-post-hero__inner{max-width:48rem}
+.ax-post-cats{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 calc(var(--spacing-unit)*3)}
+.ax-post-cat{display:inline-block;padding:.35rem .9rem;border:1px solid var(--border);border-radius:999px;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--primary)}
+.ax-post-hero h1{margin:0;font-size:clamp(2rem,5vw,3.25rem);letter-spacing:-0.015em;line-height:1.15;font-weight:500}
+.ax-post-meta{margin:calc(var(--spacing-unit)*4) 0 0;color:var(--muted);font-size:.875rem}
+.ax-post-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:calc(var(--spacing-unit)*8);align-items:start;padding-block:calc(var(--spacing-unit)*12)}
+.ax-post-main{max-width:46rem;min-width:0;border-left:2px solid var(--accent);padding-left:calc(var(--spacing-unit)*6)}
+.ax-post-body p{line-height:1.9;color:var(--ink);margin:0 0 1.6em}
+.ax-post-body h2{margin:2.2em 0 .8em;letter-spacing:-0.01em;line-height:1.25}
+.ax-post-body h3{margin:2.2em 0 .8em;letter-spacing:-0.01em}
+.ax-post-body a{color:var(--primary)}
+.ax-post-body img{max-width:100%;height:auto;border-radius:var(--radius-md)}
+.ax-post-body blockquote{border-left:2px solid var(--accent);margin:1.8em 0;padding:.2em 0 .2em 1.2em;color:var(--muted)}
+.ax-post-tags{margin:calc(var(--spacing-unit)*8) 0 0;padding-top:calc(var(--spacing-unit)*4);border-top:1px solid var(--border);font-size:.875rem;color:var(--muted)}
+.ax-comments{border-top:1px solid var(--border);padding-block:calc(var(--spacing-unit)*8)}${AX_WIDGET_AREA_CSS}${AXN_WIDGET_INPUT_CSS}`;
+
+const NOCTURNE_PRODUCTS_INDEX_TEMPLATE_HTML = `<main class="ax-shop">
+  <header class="axn-shop-hero">
+    <div class="ax-container">
+      <p class="ax-eyebrow">After-hours store</p>
+      <h1>Products</h1>
+      <div class="axn-rule"></div>
+    </div>
+  </header>
+  <div class="ax-container ax-shop__body">
+    <div class="axn-shop-list">
+      {{#each products}}
+      <article class="axn-shop-row">
+        <a class="axn-shop-row__media" href="{{url}}"><img src="{{images.0.url}}" alt="{{name}}"></a>
+        <div class="axn-shop-row__body">
+          <h2><a href="{{url}}">{{name}}</a></h2>
+          <p class="axn-shop-row__price">\${{priceInUSD}}</p>
+        </div>
+      </article>
+      {{/each}}
+    </div>
+    <nav class="ax-pagination" aria-label="Pagination">{{{paginationHtml}}}</nav>
+  </div>
+</main>`;
+
+const NOCTURNE_PRODUCTS_INDEX_TEMPLATE_CSS = `${AX_TEMPLATE_BASE}${AXN_RULE_CSS}
+.axn-shop-hero{background:var(--paper);color:var(--ink);padding-block:calc(var(--spacing-unit)*10);border-bottom:1px solid var(--border)}
+.axn-shop-hero h1{margin:0;font-size:clamp(2rem,4vw,3rem);letter-spacing:-0.02em;font-weight:500;color:var(--ink)}
+.axn-shop-hero .axn-rule{margin-top:calc(var(--spacing-unit)*5)}
+.ax-shop__body{padding-block:calc(var(--spacing-unit)*10)}
+.axn-shop-list{display:grid;grid-template-columns:repeat(2,1fr);gap:calc(var(--spacing-unit)*5)}
+.axn-shop-row{display:grid;grid-template-columns:9rem minmax(0,1fr);gap:calc(var(--spacing-unit)*5);align-items:center;padding-bottom:calc(var(--spacing-unit)*5);border-bottom:1px solid var(--border)}
+.axn-shop-row__media{display:block;aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;background:linear-gradient(135deg,var(--border),var(--muted))}
+.axn-shop-row__media img{width:100%;height:100%;object-fit:cover;display:block}
+.axn-shop-row__body h2{margin:0;font-size:1.25rem;letter-spacing:-0.01em;font-weight:500}
+.axn-shop-row__body h2 a{color:var(--ink);text-decoration:none}
+.axn-shop-row__body h2 a:hover{color:var(--primary)}
+.axn-shop-row__price{margin:.6rem 0 0;font-weight:700;color:var(--primary)}
+.ax-pagination{display:flex;align-items:center;justify-content:center;gap:calc(var(--spacing-unit)*3);margin-top:calc(var(--spacing-unit)*10);font-size:.875rem;color:var(--muted)}
+.ax-pagination a,.ax-pagination span{padding:.6rem 1.2rem;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--paper);color:var(--ink);text-decoration:none}
+.ax-pagination a:hover{border-color:var(--ink)}
+@media (max-width:800px){.axn-shop-list{grid-template-columns:1fr}}`;
+
+const NOCTURNE_PRODUCTS_DETAIL_TEMPLATE_CSS = `${AX_TEMPLATE_BASE}
+.ax-product{background:var(--paper);color:var(--ink);padding-block:calc(var(--spacing-unit)*14)}
+.ax-product__layout{display:grid;grid-template-columns:1.1fr 1fr;gap:calc(var(--spacing-unit)*10);align-items:start}
+.ax-product__gallery{border-radius:var(--radius-lg);overflow:hidden;aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--border),var(--muted))}
+.ax-product__gallery img{width:100%;height:100%;object-fit:cover;display:block}
+.ax-product__info h1{margin:0;font-size:clamp(1.75rem,4vw,2.5rem);letter-spacing:-0.015em;line-height:1.15;font-weight:500}
+.ax-product__price{margin:calc(var(--spacing-unit)*3) 0 0;font-size:1.5rem;font-weight:700;color:var(--primary)}
+.ax-product__description{margin-top:calc(var(--spacing-unit)*5);padding-top:calc(var(--spacing-unit)*5);border-top:1px solid var(--border);color:var(--muted);line-height:1.8}
+.ax-product__description p{margin:0 0 1.2em}
+.ax-product__buy{display:inline-block;margin-top:calc(var(--spacing-unit)*4);padding:.9rem 2rem;background:var(--primary);color:#111113;font-weight:600;text-decoration:none;border-radius:var(--radius-md)}
+.ax-product__buy:hover{filter:brightness(1.08)}
+@media (max-width:800px){.ax-product__layout{grid-template-columns:1fr}}`;
+
+const NOCTURNE_DESIGNS_INDEX_TEMPLATE_CSS = `${AX_TEMPLATE_BASE}
+.ax-designs-hero{background:var(--paper);color:var(--ink);padding-block:calc(var(--spacing-unit)*10);border-bottom:1px solid var(--border)}
+.ax-designs-hero h1{margin:0;font-size:clamp(2rem,4vw,3rem);letter-spacing:-0.02em;font-weight:500;color:var(--ink)}
+.ax-designs__body{padding-block:calc(var(--spacing-unit)*10)}
+.ax-designs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--spacing-unit)*6)}
+.ax-design-card{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color .2s ease}
+.ax-design-card:hover{border-color:var(--muted)}
+.ax-design-card__media{display:block;aspect-ratio:4/3;background:linear-gradient(135deg,var(--border),var(--muted))}
+.ax-design-card__media img{width:100%;height:100%;object-fit:cover;display:block}
+.ax-design-card__body{padding:calc(var(--spacing-unit)*4)}
+.ax-design-card__body h2{margin:0;font-size:1.125rem;letter-spacing:-0.01em;font-weight:500}
+.ax-design-card__body h2 a{color:var(--ink);text-decoration:none}
+.ax-design-card__body h2 a:hover{color:var(--primary)}
+.ax-design-card__specs{margin:.6rem 0 0;font-size:.875rem;color:var(--muted)}
+@media (max-width:900px){.ax-designs-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){.ax-designs-grid{grid-template-columns:1fr}}`;
+
+const NOCTURNE_DESIGNS_DETAIL_TEMPLATE_CSS = `${AX_TEMPLATE_BASE}
+.ax-design{background:var(--paper);color:var(--ink);padding-block:calc(var(--spacing-unit)*14)}
+.ax-design__layout{display:grid;grid-template-columns:1.2fr 1fr;gap:calc(var(--spacing-unit)*10);align-items:start}
+.ax-design__media{border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,var(--border),var(--muted));aspect-ratio:4/3}
+.ax-design__media img{width:100%;height:100%;object-fit:cover;display:block}
+.ax-design__panel h1{margin:0;font-size:clamp(1.75rem,4vw,2.5rem);letter-spacing:-0.015em;line-height:1.15;font-weight:500}
+.ax-specs{list-style:none;margin:calc(var(--spacing-unit)*5) 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:calc(var(--spacing-unit)*3)}
+.ax-specs li{border-bottom:1px solid var(--border);padding:calc(var(--spacing-unit)*2) 0;display:flex;flex-direction:column;gap:.25rem}
+.ax-specs span{font-size:.6875rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ax-specs strong{font-size:1.125rem;color:var(--ink)}
+.ax-design__description{margin-top:calc(var(--spacing-unit)*5);color:var(--muted);line-height:1.8}
+.ax-design__description p{margin:0 0 1.2em}
+@media (max-width:800px){.ax-design__layout{grid-template-columns:1fr}}`;
+
+const NOCTURNE_TEMPLATES: ThemeTemplate[] = [
+  { name: "Blog Detail (Nocturne)", collection: "blog", kind: "detail", html: BLOG_DETAIL_TEMPLATE_HTML, css: NOCTURNE_BLOG_DETAIL_TEMPLATE_CSS },
+  { name: "Blog Index (Nocturne)", collection: "blog", kind: "index", html: NOCTURNE_BLOG_INDEX_TEMPLATE_HTML, css: NOCTURNE_BLOG_INDEX_TEMPLATE_CSS },
+  { name: "Products Detail (Nocturne)", collection: "products", kind: "detail", html: PRODUCTS_DETAIL_TEMPLATE_HTML, css: NOCTURNE_PRODUCTS_DETAIL_TEMPLATE_CSS },
+  { name: "Products Index (Nocturne)", collection: "products", kind: "index", html: NOCTURNE_PRODUCTS_INDEX_TEMPLATE_HTML, css: NOCTURNE_PRODUCTS_INDEX_TEMPLATE_CSS },
+  { name: "House Designs Detail (Nocturne)", collection: "house-designs", kind: "detail", html: DESIGNS_DETAIL_TEMPLATE_HTML, css: NOCTURNE_DESIGNS_DETAIL_TEMPLATE_CSS },
+  { name: "House Designs Index (Nocturne)", collection: "house-designs", kind: "index", html: DESIGNS_INDEX_TEMPLATE_HTML, css: NOCTURNE_DESIGNS_INDEX_TEMPLATE_CSS },
+];
+
+/* ----------------------------------------------------------------------- */
 /* Pages — final, GrapesJS-editable HTML. No server-side placeholders:       */
 /* navigation and content are hardcoded, per page, exactly as served.       */
 /* ----------------------------------------------------------------------- */
@@ -932,6 +1156,182 @@ const THEME_PAGES: ThemePage[] = [
 ];
 
 /* ----------------------------------------------------------------------- */
+/* Nocturne pages                                                           */
+/*                                                                         */
+/* Page slugs are globally unique, so the Nocturne pages live under their  */
+/* own slugs (home-nocturne, …) and render at /home-nocturne etc. They are */
+/* composed from the SHARED pattern library (untouched, theme=null) — the  */
+/* dark look comes from the Nocturne tokens plus the override block below, */
+/* which re-points the patterns' hardcoded light values at the tokens.     */
+/* ----------------------------------------------------------------------- */
+
+const NOCTURNE_PATTERN_OVERRIDES_CSS = `
+.axn-rule{height:1px;background:var(--border)}
+.axn-hero{background:var(--paper);color:var(--ink);border-bottom:1px solid var(--border)}
+.axn-hero::after{background:radial-gradient(closest-side,rgba(163,230,53,.12),transparent 72%)}
+.axn-hero .ax-eyebrow{color:var(--primary)}
+.axn-hero .ax-hero__sub{color:var(--muted)}
+.axn-hero .ax-hero__note{color:var(--muted)}
+.axn-hero .ax-btn--primary{background:var(--primary);color:#111113;box-shadow:0 8px 20px -8px rgba(163,230,53,.35)}
+.axn-hero .ax-btn--primary:hover{background:var(--primary);filter:brightness(1.06)}
+.axn-hero__ghost{border-color:rgba(244,244,245,.25);color:var(--ink)}
+.axn-hero__ghost:hover{border-color:var(--ink)}
+.ax-section-head h2{color:var(--ink)}
+.ax-section-head p:not(.ax-eyebrow){color:var(--muted)}
+.ax-feature{background:transparent;border-color:var(--border)}
+.ax-feature:hover{box-shadow:none;transform:none;border-color:var(--muted)}
+.ax-feature__icon{background:rgba(163,230,53,.1);color:var(--primary)}
+.ax-feature h3{color:var(--ink)}
+.ax-feature p{color:var(--muted)}
+.ax-stat__num{color:var(--ink)}
+.ax-stat__label{color:var(--muted)}
+.ax-quote blockquote p{color:var(--ink)}
+.ax-quote__person strong{color:var(--ink)}
+.ax-quote__person span{color:var(--muted)}
+.ax-avatar{background:linear-gradient(135deg,var(--primary),var(--accent));color:#111113}
+.ax-cta{background:var(--primary);color:#111113}
+.ax-cta p{color:rgba(17,17,19,.7)}
+.ax-cta .ax-btn--light{background:var(--ink);color:var(--paper)}
+.ax-cta .ax-btn--light:hover{background:var(--paper);color:var(--ink)}
+.ax-faq__list{border-color:var(--border)}
+.ax-faq__item{border-color:var(--border)}
+.ax-faq__item summary{color:var(--ink)}
+.ax-faq__item summary::after{color:var(--primary)}
+.ax-faq__item p{color:var(--muted)}
+.ax-page-hero{background:var(--paper);color:var(--ink);border-bottom:1px solid var(--border)}
+.ax-page-hero .ax-eyebrow{color:var(--primary)}
+.ax-page-hero h1{color:var(--ink)}
+.ax-page-hero__sub{color:var(--muted)}
+.ax-prose h2{color:var(--ink)}
+.ax-prose p{color:var(--muted)}
+.ax-contact-card{background:transparent;border-color:var(--border)}
+.ax-contact-card h3{color:var(--ink)}
+.ax-contact-card p{color:var(--muted)}`;
+
+const NOCTURNE_HERO_HTML = `<section class="ax-hero axn-hero">
+  <div class="ax-container ax-hero__inner">
+    <p class="ax-eyebrow">The after-hours edition</p>
+    <h1 class="ax-hero__title">Built for the night shift</h1>
+    <p class="ax-hero__sub">The same calm workspace, tuned for after-hours reading: dark paper, light ink, and a palette that keeps your eyes relaxed long past sunset.</p>
+    <div class="ax-hero__actions">
+      <a class="ax-btn ax-btn--primary" href="/blog">Read the night desk</a>
+      <a class="ax-btn ax-btn--ghost-dark axn-hero__ghost" href="/about-nocturne">Our story</a>
+    </div>
+    <p class="ax-hero__note">Dark by default &middot; Same content, different mood</p>
+  </div>
+</section>`;
+
+const NOCTURNE_HOME_PAGE_HTML = `<main class="ax-page axn-page">
+  ${PAGE_NAV_HTML}
+  ${NOCTURNE_HERO_HTML}
+  <div class="axn-rule"></div>
+  ${PATTERN_STATS_HTML}
+  <div class="axn-rule"></div>
+  ${PATTERN_TESTIMONIAL_HTML}
+  <div class="axn-rule"></div>
+  ${PATTERN_CTA_HTML}
+  <div class="axn-rule"></div>
+  ${PATTERN_FAQ_HTML}
+</main>`;
+
+const NOCTURNE_HOME_PAGE_CSS = [
+  PAGE_NAV_CSS,
+  PATTERN_HERO_CSS,
+  PATTERN_STATS_CSS,
+  PATTERN_TESTIMONIAL_CSS,
+  PATTERN_CTA_CSS,
+  PATTERN_FAQ_CSS,
+  NOCTURNE_PATTERN_OVERRIDES_CSS,
+].join("\n");
+
+const NOCTURNE_ABOUT_PAGE_HTML = `<main class="ax-page axn-page">
+  ${PAGE_NAV_HTML}
+  ${pageHero("About the night desk", "We build for the night shift.", "Aska's Nocturne edition takes the same structured content and calm editing experience and tunes every surface for after-hours reading.")}
+  <section class="ax-prose">
+    <div class="ax-container">
+      <h2>Why dark matters</h2>
+      <p>Most of the web assumes the sun is up. But a growing share of reading happens late — after work, after the kids are down, after the notifications stop. Bright white pages are tuned for the wrong half of the day, so Nocturne starts from the opposite assumption: a deep, quiet background and text that glows instead of glare.</p>
+      <h2>Same content, different mood</h2>
+      <p>Nocturne isn't a second CMS. Every post, page and product is the same structured content the Editorial theme renders — only the tokens change. One theme swap turns warm paper into dark ink, and every block, template and page follows along, because they all speak the same design-token vocabulary.</p>
+      <h2>A small team, still</h2>
+      <p>We are the same small team with the same simple rule: if a feature makes the CMS harder to reason about, it doesn't ship. Themes exist because tokens made them nearly free — not because we wanted two products to maintain.</p>
+    </div>
+  </section>
+  <div class="axn-rule"></div>
+  ${PATTERN_STATS_HTML}
+  <div class="axn-rule"></div>
+  ${PATTERN_CTA_HTML}
+</main>`;
+
+const NOCTURNE_ABOUT_PAGE_CSS = [
+  PAGE_NAV_CSS,
+  PAGE_HERO_CSS,
+  ABOUT_PROSE_CSS,
+  PATTERN_STATS_CSS,
+  PATTERN_CTA_CSS,
+  NOCTURNE_PATTERN_OVERRIDES_CSS,
+].join("\n");
+
+const NOCTURNE_CONTACT_PAGE_HTML = `<main class="ax-page axn-page">
+  ${PAGE_NAV_HTML}
+  ${pageHero("Contact the night desk", "We're up late. Talk to us.", "Questions about Aska, partnerships, or press? The night desk reads everything and usually replies before morning.")}
+  <section class="ax-contact">
+    <div class="ax-container">
+      <div class="ax-contact-grid">
+        <div class="ax-contact-card">
+          <h3>Email</h3>
+          <p><a href="mailto:hello@aska.dev">hello@aska.dev</a><br>Support: <a href="mailto:help@aska.dev">help@aska.dev</a></p>
+        </div>
+        <div class="ax-contact-card">
+          <h3>Phone</h3>
+          <p><a href="tel:+61255500142">+61 2 5550 0142</a><br>Mon&ndash;Fri, 9am&ndash;6pm AEST</p>
+        </div>
+        <div class="ax-contact-card">
+          <h3>Office</h3>
+          <p>14 Harbour Lane, Level 3<br>Sydney NSW 2000, Australia</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="axn-rule"></div>
+  ${PATTERN_FAQ_HTML}
+</main>`;
+
+const NOCTURNE_CONTACT_PAGE_CSS = [
+  PAGE_NAV_CSS,
+  PAGE_HERO_CSS,
+  CONTACT_CARDS_CSS,
+  PATTERN_FAQ_CSS,
+  NOCTURNE_PATTERN_OVERRIDES_CSS,
+].join("\n");
+
+/* Slugs carry the -nocturne suffix because pages.slug is globally unique —
+   see the note above this section. */
+const NOCTURNE_PAGES: ThemePage[] = [
+  {
+    slug: "home-nocturne",
+    title: "Home (Nocturne)",
+    metaDescription: "Aska Nocturne — the after-hours edition of the editorial CMS: same calm workspace, tuned for reading at night.",
+    html: NOCTURNE_HOME_PAGE_HTML,
+    css: NOCTURNE_HOME_PAGE_CSS,
+  },
+  {
+    slug: "about-nocturne",
+    title: "About (Nocturne)",
+    metaDescription: "The story behind Aska's Nocturne edition: a dark editorial theme built for the night shift.",
+    html: NOCTURNE_ABOUT_PAGE_HTML,
+    css: NOCTURNE_ABOUT_PAGE_CSS,
+  },
+  {
+    slug: "contact-nocturne",
+    title: "Contact (Nocturne)",
+    metaDescription: "Reach the Aska night desk — email, phone and office details.",
+    html: NOCTURNE_CONTACT_PAGE_HTML,
+    css: NOCTURNE_CONTACT_PAGE_CSS,
+  },
+];
+
+/* ----------------------------------------------------------------------- */
 /* Menus, forms, categories                                                 */
 /* ----------------------------------------------------------------------- */
 
@@ -944,6 +1344,29 @@ const MENU_PRIMARY_LINKS = (pages: { homeId: number; aboutId: number; contactId:
 
 const MENU_FOOTER_LINKS = (pages: { homeId: number; aboutId: number; contactId: number }) => [
   ...MENU_PRIMARY_LINKS(pages),
+  { blockType: "link" as const, label: "Privacy", linkType: "url" as const, url: "#" },
+];
+
+// Nocturne menus link to the Nocturne pages via page-type links (the Link
+// block's `page` relationship works for any pages doc, so the menu items
+// resolve to /home-nocturne etc.); the shared /blog index stays a URL link.
+const MENU_NOCTURNE_PRIMARY_LINKS = (pages: {
+  homeId: number;
+  aboutId: number;
+  contactId: number;
+}) => [
+  { blockType: "link" as const, label: "Home", linkType: "page" as const, page: pages.homeId },
+  { blockType: "link" as const, label: "Blog", linkType: "url" as const, url: "/blog" },
+  { blockType: "link" as const, label: "About", linkType: "page" as const, page: pages.aboutId },
+  { blockType: "link" as const, label: "Contact", linkType: "page" as const, page: pages.contactId },
+];
+
+const MENU_NOCTURNE_FOOTER_LINKS = (pages: {
+  homeId: number;
+  aboutId: number;
+  contactId: number;
+}) => [
+  ...MENU_NOCTURNE_PRIMARY_LINKS(pages),
   { blockType: "link" as const, label: "Privacy", linkType: "url" as const, url: "#" },
 ];
 
@@ -1249,11 +1672,20 @@ function track(summary: ThemeSeedSummary, list: SummaryList, label: string) {
   summary[list].push(label);
 }
 
-async function seedStyleTokens(payload: Payload, summary: ThemeSeedSummary) {
+async function seedStyleTokens(payload: Payload, summary: ThemeSeedSummary, editorialId: number) {
   for (const token of STYLE_TOKENS) {
+    // The Editorial/shared token set. First run: these live at theme=null
+    // until tagEditorialDocs tags them. Re-runs: already tagged editorial.
+    // Accept either so re-applying the seed never duplicates the set (the
+    // Nocturne twins reuse the same slugs under their own theme).
     const found = await payload.find({
       collection: "styles",
-      where: { slug: { equals: token.slug } },
+      where: {
+        and: [
+          { slug: { equals: token.slug } },
+          { or: [{ theme: { exists: false } }, { theme: { equals: editorialId } }] },
+        ],
+      },
       limit: 1,
       depth: 0,
     });
@@ -1265,7 +1697,7 @@ async function seedStyleTokens(payload: Payload, summary: ThemeSeedSummary) {
       });
       track(summary, "existing", `style:${token.slug}`);
     } else {
-      await payload.create({ collection: "styles", data: { ...token } });
+      await payload.create({ collection: "styles", data: { ...token, theme: null } });
       track(summary, "created", `style:${token.slug}`);
     }
   }
@@ -1293,17 +1725,20 @@ async function seedComponents(payload: Payload, summary: ThemeSeedSummary) {
   }
 }
 
-async function seedTemplates(payload: Payload, summary: ThemeSeedSummary) {
+async function seedTemplates(payload: Payload, summary: ThemeSeedSummary, editorialId: number) {
   for (const template of THEME_TEMPLATES) {
-    // Key on (collection, kind) — the pair is unique per the collection hook.
-    // A template a user created under any name still gets converged to the
-    // theme's content rather than aborting the seed.
+    // Key on (collection, kind) scoped to the shared-or-Editorial theme —
+    // first run unthemed, re-runs tagged editorial. Per-theme variants (e.g.
+    // the Nocturne set below) live in their own rows and must not be
+    // converged to the shared content. A template a user created under any
+    // name still gets converged to the theme's content.
     const found = await payload.find({
       collection: "templates",
       where: {
         and: [
           { collection: { equals: template.collection } },
           { kind: { equals: template.kind } },
+          { or: [{ theme: { exists: false } }, { theme: { equals: editorialId } }] },
         ],
       },
       limit: 1,
@@ -1319,7 +1754,7 @@ async function seedTemplates(payload: Payload, summary: ThemeSeedSummary) {
       continue;
     }
     try {
-      await payload.create({ collection: "templates", data: { ...template } });
+      await payload.create({ collection: "templates", data: { ...template, theme: null } });
       track(summary, "created", `template:${template.name}`);
     } catch (err) {
       if (err instanceof Error && /unique|already exists/i.test(err.message)) {
@@ -1679,6 +2114,367 @@ async function seedHouseDesigns(payload: Payload, summary: ThemeSeedSummary) {
   }
 }
 
+/* ----------------------------------------------------------------------- */
+/* Theme docs, Nocturne content, and Editorial tagging                       */
+/* ----------------------------------------------------------------------- */
+
+interface ThemeIds {
+  editorialId: number;
+  nocturneId: number;
+}
+
+// Seeded nocturne FIRST and editorial LAST with active: true — the themes
+// collection keeps a single active theme (activating one deactivates the
+// other), so the last activation wins and Editorial stays the live theme.
+const THEMES = [
+  {
+    slug: "nocturne",
+    name: "Nocturne",
+    description: "Dark ink editorial theme for after-hours reading.",
+    active: false,
+  },
+  {
+    slug: "editorial",
+    name: "Editorial",
+    description: "Warm paper editorial theme.",
+    active: true,
+  },
+] as const;
+
+async function seedThemes(payload: Payload, summary: ThemeSeedSummary): Promise<ThemeIds> {
+  const ids: ThemeIds = { editorialId: 0, nocturneId: 0 };
+  for (const theme of THEMES) {
+    const found = await payload.find({
+      collection: "themes",
+      where: { slug: { equals: theme.slug } },
+      limit: 1,
+      depth: 0,
+    });
+    const data = {
+      name: theme.name,
+      description: theme.description,
+      active: theme.active,
+    };
+    let id: number;
+    if (found.docs[0]) {
+      const updated = await payload.update({
+        collection: "themes",
+        id: found.docs[0].id,
+        data,
+      });
+      id = updated.id as number;
+      track(summary, "existing", `theme:${theme.slug}`);
+    } else {
+      const created = await payload.create({
+        collection: "themes",
+        data: { ...data, slug: theme.slug },
+      });
+      id = created.id as number;
+      track(summary, "created", `theme:${theme.slug}`);
+    }
+    if (theme.slug === "editorial") ids.editorialId = id;
+    else ids.nocturneId = id;
+  }
+  return ids;
+}
+
+async function seedNocturneStyleTokens(
+  payload: Payload,
+  summary: ThemeSeedSummary,
+  nocturneId: number
+) {
+  for (const token of NOCTURNE_STYLE_TOKENS) {
+    const found = await payload.find({
+      collection: "styles",
+      where: {
+        and: [{ slug: { equals: token.slug } }, { theme: { equals: nocturneId } }],
+      },
+      limit: 1,
+      depth: 0,
+    });
+    if (found.docs[0]) {
+      await payload.update({
+        collection: "styles",
+        id: found.docs[0].id,
+        data: { ...token, theme: nocturneId },
+      });
+      track(summary, "existing", `style:${token.slug} (nocturne)`);
+    } else {
+      await payload.create({
+        collection: "styles",
+        data: { ...token, theme: nocturneId },
+      });
+      track(summary, "created", `style:${token.slug} (nocturne)`);
+    }
+  }
+}
+
+async function seedNocturneTemplates(
+  payload: Payload,
+  summary: ThemeSeedSummary,
+  nocturneId: number
+) {
+  for (const template of NOCTURNE_TEMPLATES) {
+    const found = await payload.find({
+      collection: "templates",
+      where: {
+        and: [
+          { collection: { equals: template.collection } },
+          { kind: { equals: template.kind } },
+          { theme: { equals: nocturneId } },
+        ],
+      },
+      limit: 1,
+      depth: 0,
+    });
+    if (found.docs[0]) {
+      await payload.update({
+        collection: "templates",
+        id: found.docs[0].id,
+        data: { ...template, theme: nocturneId },
+      });
+      track(summary, "existing", `template:${template.name}`);
+      continue;
+    }
+    try {
+      await payload.create({
+        collection: "templates",
+        data: { ...template, theme: nocturneId },
+      });
+      track(summary, "created", `template:${template.name}`);
+    } catch (err) {
+      if (err instanceof Error && /unique|already exists/i.test(err.message)) {
+        track(summary, "skipped", `template:${template.name} (${err.message})`);
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
+interface NocturnePageIds {
+  homeId: number;
+  aboutId: number;
+  contactId: number;
+}
+
+async function seedNocturnePages(
+  payload: Payload,
+  summary: ThemeSeedSummary,
+  nocturneId: number
+): Promise<NocturnePageIds> {
+  const ids: NocturnePageIds = { homeId: 0, aboutId: 0, contactId: 0 };
+  for (const page of NOCTURNE_PAGES) {
+    const found = await payload.find({
+      collection: "pages",
+      where: { slug: { equals: page.slug } },
+      limit: 1,
+      depth: 0,
+    });
+    const data = {
+      title: page.title,
+      metaDescription: page.metaDescription,
+      html: page.html,
+      css: page.css,
+      theme: nocturneId,
+      _status: "published" as const,
+    };
+    let id: number;
+    if (found.docs[0]) {
+      const updated = await payload.update({
+        collection: "pages",
+        id: found.docs[0].id,
+        data,
+      });
+      id = updated.id as number;
+      track(summary, "existing", `page:${page.slug}`);
+    } else {
+      const created = await payload.create({
+        collection: "pages",
+        data: { ...data, slug: page.slug },
+      });
+      id = created.id as number;
+      track(summary, "created", `page:${page.slug}`);
+    }
+    if (page.slug === "home-nocturne") ids.homeId = id;
+    if (page.slug === "about-nocturne") ids.aboutId = id;
+    if (page.slug === "contact-nocturne") ids.contactId = id;
+  }
+  return ids;
+}
+
+async function seedNocturneMenus(
+  payload: Payload,
+  summary: ThemeSeedSummary,
+  pages: NocturnePageIds,
+  nocturneId: number
+): Promise<{ primaryId: number; footerId: number }> {
+  const menus = [
+    { name: "Primary Nocturne", items: MENU_NOCTURNE_PRIMARY_LINKS(pages) },
+    { name: "Footer Nocturne", items: MENU_NOCTURNE_FOOTER_LINKS(pages) },
+  ];
+  const ids: { primaryId: number; footerId: number } = { primaryId: 0, footerId: 0 };
+  for (const menu of menus) {
+    const found = await payload.find({
+      collection: "menus",
+      where: { name: { equals: menu.name } },
+      limit: 1,
+      depth: 0,
+    });
+    let id: number;
+    if (found.docs[0]) {
+      const updated = await payload.update({
+        collection: "menus",
+        id: found.docs[0].id,
+        data: { items: menu.items, theme: nocturneId },
+      });
+      id = updated.id as number;
+      track(summary, "existing", `menu:${menu.name}`);
+    } else {
+      const created = await payload.create({
+        collection: "menus",
+        data: { name: menu.name, items: menu.items, theme: nocturneId },
+      });
+      id = created.id as number;
+      track(summary, "created", `menu:${menu.name}`);
+    }
+    if (menu.name === "Primary Nocturne") ids.primaryId = id;
+    if (menu.name === "Footer Nocturne") ids.footerId = id;
+  }
+  return ids;
+}
+
+/** Point each theme at its own homepage and menus. Runs after pages/menus
+ *  exist; converges on every re-run. */
+async function wireThemes(
+  payload: Payload,
+  summary: ThemeSeedSummary,
+  themeIds: ThemeIds,
+  editorial: { homeId: number; primaryId: number; footerId: number },
+  nocturne: { homeId: number; primaryId: number; footerId: number }
+) {
+  const wires = [
+    {
+      id: themeIds.editorialId,
+      label: "editorial",
+      homepage: editorial.homeId,
+      primaryMenu: editorial.primaryId,
+      footerMenu: editorial.footerId,
+    },
+    {
+      id: themeIds.nocturneId,
+      label: "nocturne",
+      homepage: nocturne.homeId,
+      primaryMenu: nocturne.primaryId,
+      footerMenu: nocturne.footerId,
+    },
+  ];
+  for (const wire of wires) {
+    await payload.update({
+      collection: "themes",
+      id: wire.id,
+      data: {
+        homepage: wire.homepage,
+        primaryMenu: wire.primaryMenu,
+        footerMenu: wire.footerMenu,
+      },
+    });
+    track(summary, "existing", `theme:${wire.label} (homepage + menus wired)`);
+  }
+}
+
+/** Normalize a (possibly populated) theme relationship value to an id. */
+function themeRefId(theme: unknown): number | string | null {
+  if (theme == null) return null;
+  if (typeof theme === "object") return (theme as { id?: number | string }).id ?? null;
+  return theme as number | string;
+}
+
+/** Set `theme` on an existing shared (Editorial) doc. Idempotent: only
+ *  writes when the doc is unthemed or tagged with a different theme. Where
+ *  clauses may match several per-theme rows (styles share slugs across
+ *  themes), so the candidate with theme=null — or already this theme — is
+ *  picked rather than whichever row sorts first. */
+async function tagDocWithTheme(
+  payload: Payload,
+  summary: ThemeSeedSummary,
+  collection: "styles" | "templates" | "menus" | "pages",
+  where: Where,
+  themeId: number,
+  label: string
+) {
+  const found = await payload.find({ collection, where, limit: 10, depth: 0 });
+  const doc = (found.docs as { id: number; theme?: unknown }[]).find((d) => {
+    const current = themeRefId(d.theme);
+    return current === null || current === themeId;
+  });
+  if (!doc) {
+    track(summary, "skipped", `tag:${label} (no unthemed doc found)`);
+    return;
+  }
+  if (themeRefId(doc.theme) === themeId) {
+    track(summary, "existing", `tag:${label}`);
+    return;
+  }
+  await payload.update({ collection, id: doc.id, data: { theme: themeId } });
+  track(summary, "existing", `tag:${label} (theme set)`);
+}
+
+/** Tag the original theme-A docs as Editorial: the 11 tokens (by slug), the
+ *  6 templates (by collection+kind), the Primary/Footer menus (by name) and
+ *  the home/about/contact pages (by slug). */
+async function tagEditorialDocs(
+  payload: Payload,
+  summary: ThemeSeedSummary,
+  editorialId: number
+) {
+  for (const token of STYLE_TOKENS) {
+    await tagDocWithTheme(
+      payload,
+      summary,
+      "styles",
+      { slug: { equals: token.slug } },
+      editorialId,
+      `style:${token.slug}`
+    );
+  }
+  for (const template of THEME_TEMPLATES) {
+    await tagDocWithTheme(
+      payload,
+      summary,
+      "templates",
+      {
+        and: [
+          { collection: { equals: template.collection } },
+          { kind: { equals: template.kind } },
+        ],
+      },
+      editorialId,
+      `template:${template.name}`
+    );
+  }
+  for (const name of ["Primary", "Footer"] as const) {
+    await tagDocWithTheme(
+      payload,
+      summary,
+      "menus",
+      { name: { equals: name } },
+      editorialId,
+      `menu:${name}`
+    );
+  }
+  for (const slug of ["home", "about", "contact"] as const) {
+    await tagDocWithTheme(
+      payload,
+      summary,
+      "pages",
+      { slug: { equals: slug } },
+      editorialId,
+      `page:${slug}`
+    );
+  }
+}
+
 async function logThemeBuilder(payload: Payload) {
   // Read-only: the spec leaves header/footer on whatever the site already
   // uses (default component unless a user picked something) — just log the
@@ -1695,17 +2491,45 @@ async function logThemeBuilder(payload: Payload) {
 /**
  * Applies the full sample theme. Every item is found-or-created by its
  * natural key, so the function is idempotent: re-runs converge the theme
- * documents (tokens, components, templates, pages, menus, forms, widgets,
- * settings) to this data and leave user-created content untouched.
+ * documents (themes, tokens, components, templates, pages, menus, forms,
+ * widgets, settings) to this data and leave user-created content untouched.
+ *
+ * Order matters: themes exist before anything tags or references them; the
+ * Nocturne tokens/templates are keyed by the Nocturne theme id; menus and
+ * pages exist before the themes' homepage/menu relationships and the
+ * settings global are wired; Editorial activation is written by the
+ * editorial upsert in seedThemes, which runs after Nocturne exists.
  */
 export async function applyTheme(payload: Payload): Promise<ThemeSeedSummary> {
   const summary: ThemeSeedSummary = { created: [], existing: [], skipped: [] };
 
-  await seedStyleTokens(payload, summary);
+  const themeIds = await seedThemes(payload, summary);
+  await seedStyleTokens(payload, summary, themeIds.editorialId);
+  await seedNocturneStyleTokens(payload, summary, themeIds.nocturneId);
   await seedComponents(payload, summary);
-  await seedTemplates(payload, summary);
+  await seedTemplates(payload, summary, themeIds.editorialId);
+  await seedNocturneTemplates(payload, summary, themeIds.nocturneId);
   const pages = await seedPages(payload, summary);
+  const nocturnePages = await seedNocturnePages(payload, summary, themeIds.nocturneId);
   const menus = await seedMenus(payload, summary, pages);
+  const nocturneMenus = await seedNocturneMenus(
+    payload,
+    summary,
+    nocturnePages,
+    themeIds.nocturneId
+  );
+  await wireThemes(
+    payload,
+    summary,
+    themeIds,
+    { homeId: pages.homeId, primaryId: menus.primaryId, footerId: menus.footerId },
+    {
+      homeId: nocturnePages.homeId,
+      primaryId: nocturneMenus.primaryId,
+      footerId: nocturneMenus.footerId,
+    }
+  );
+  await tagEditorialDocs(payload, summary, themeIds.editorialId);
   const forms = await seedForms(payload, summary);
   await seedWidgets(payload, summary, forms.newsletterId);
   await seedSettings(payload, summary, pages, menus);

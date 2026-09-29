@@ -1,6 +1,7 @@
 import "server-only";
 import { getPayload } from "payload";
 import config from "@/payload.config";
+import { preferred, themeFilter, themeScope } from "@/lib/themes/repo";
 
 export type TemplateKind = "detail" | "index";
 
@@ -40,15 +41,20 @@ export async function readTemplateForCollection(
   kind: TemplateKind = "detail"
 ): Promise<Template | null> {
   const p = await payload();
+  const { activeThemeId } = await themeScope();
   const r = await p.find({
     collection: "templates",
     where: {
-      and: [{ collection: { equals: collectionSlug } }, { kind: { equals: kind } }],
+      and: [
+        { collection: { equals: collectionSlug } },
+        { kind: { equals: kind } },
+        ...(activeThemeId != null ? [themeFilter(activeThemeId)] : []),
+      ],
     },
-    limit: 1,
+    limit: 5,
     depth: 0,
   });
-  const doc = r.docs[0];
+  const doc = preferred(r.docs, activeThemeId);
   return doc ? mapDoc(doc as never) : null;
 }
 

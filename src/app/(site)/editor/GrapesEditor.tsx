@@ -252,9 +252,10 @@ export function GrapesEditor({ target, initial, fields = EMPTY_FIELDS }: Props) 
       }
 
       // User-managed blocks from the Components collection — no hardcoded
-      // components here, admins add/edit these from the dashboard.
+      // components here, admins add/edit these from the dashboard. The
+      // editor route scopes them to the active theme (shared as fallback).
       try {
-        const res = await fetch("/api/components?limit=200&depth=1", {
+        const res = await fetch("/api/editor/components", {
           credentials: "include",
         });
         if (res.ok && !cancelled) {

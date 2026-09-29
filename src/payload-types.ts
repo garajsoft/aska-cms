@@ -14,6 +14,7 @@ export interface Page {
   shareImage?: (string | number | Media) | null;
   html?: string | null;
   css?: string | null;
+  theme?: (string | number | Theme) | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -150,6 +151,7 @@ export interface Menu {
   id: number;
   name: string;
   items?: Link[] | null;
+  theme?: (string | number | Theme) | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -180,6 +182,7 @@ export interface Template {
   kind: 'detail' | 'index';
   html?: string | null;
   css?: string | null;
+  theme?: (string | number | Theme) | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -202,6 +205,7 @@ export interface Component {
   html?: string | null;
   css?: string | null;
   js?: string | null;
+  theme?: (string | number | Theme) | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -240,6 +244,19 @@ export interface Style {
   fontWeight?: ('100' | '300' | '400' | '500' | '600' | '700' | '800' | '900') | null;
   lineHeight?: string | null;
   letterSpacing?: string | null;
+  theme?: (string | number | Theme) | null;
+  updatedAt: string;
+  createdAt: string;
+}
+export interface Theme {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  active?: boolean | null;
+  homepage?: (string | number | Page) | null;
+  primaryMenu?: (string | number | Menu) | null;
+  footerMenu?: (string | number | Menu) | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -613,6 +630,7 @@ export interface Config {
     templates: Template;
     components: Component;
     styles: Style;
+    themes: Theme;
     'house-designs': HouseDesign;
     forms: Form;
     'form-submissions': FormSubmission;

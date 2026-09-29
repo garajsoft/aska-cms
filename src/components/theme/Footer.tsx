@@ -3,12 +3,21 @@ import Link from "next/link";
 import { getPayload } from "payload";
 import config from "@/payload.config";
 import type { Link as MenuLink, Page, Blog } from "@/payload-types";
+import { getActiveTheme } from "@/lib/themes/repo";
 import { Widgets } from "./Widgets";
 
 async function fetchFooterMenu(): Promise<MenuLink[] | null> {
   const p = await getPayload({ config });
-  const settings = await p.findGlobal({ slug: "settings", depth: 2 });
-  const menu = (settings as { footerMenu?: unknown }).footerMenu;
+  const [settings, activeTheme] = await Promise.all([
+    p.findGlobal({ slug: "settings", depth: 2 }),
+    getActiveTheme(),
+  ]);
+  let menu: unknown = (settings as { footerMenu?: unknown }).footerMenu;
+  // Active theme's menu wins; fall back to Settings → Navigation.
+  const themeMenu = activeTheme?.footerMenu;
+  if (typeof themeMenu === "number" || typeof themeMenu === "string") {
+    menu = await p.findByID({ collection: "menus", id: themeMenu, depth: 2 }).catch(() => null);
+  }
   if (!menu || typeof menu !== "object") return null;
   const items = (menu as { items?: MenuLink[] | null }).items;
   return Array.isArray(items) && items.length > 0 ? items : null;

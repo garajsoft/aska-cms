@@ -18,6 +18,7 @@ import { Media } from "./collections/Media";
 import { Templates } from "./collections/Templates";
 import { Components } from "./collections/Components";
 import { Styles } from "./collections/Styles";
+import { Themes } from "./collections/Themes";
 import { HouseDesigns } from "./collections/HouseDesigns";
 import { Forms } from "./collections/Forms";
 import { FormSubmissions } from "./collections/FormSubmissions";
@@ -83,6 +84,7 @@ export default buildConfig({
     Templates,
     Components,
     Styles,
+    Themes,
     HouseDesigns,
     Forms,
     FormSubmissions,

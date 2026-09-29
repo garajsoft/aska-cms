@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionConfig, Where } from "payload";
 import { isContentManager } from "@/lib/auth/roles";
 import { withImportExportUI } from "@/lib/importExport/withImportExportUI";
 import { CODE_FIELD_ADMIN } from "@/lib/adminFields/codeEditor";
@@ -20,17 +20,23 @@ export const Templates: CollectionConfig = withImportExportUI({
       async ({ req, operation, data, originalDoc }) => {
         // Uniqueness used to live on the `collection` field itself, but one
         // collection now has two templates (detail + index). Enforce the
-        // (collection, kind) pair here instead — a find with an id inequality
-        // also lets a doc keep its own row on update.
+        // (collection, kind, theme) triple here instead — a find with an id
+        // inequality also lets a doc keep its own row on update. Untagged
+        // (shared) templates and per-theme templates coexist; two docs with
+        // the same values AND the same theme (null counts as a theme) clash.
         const collection = data?.collection;
         const kind = data?.kind ?? "detail";
         if (!collection) return data;
+        const theme = data?.theme !== undefined ? data.theme : originalDoc?.theme;
+        const themeClause: Where =
+          theme == null ? { theme: { exists: false } } : { theme: { equals: theme } };
         const existing = await req.payload.find({
           collection: "templates",
           where: {
             and: [
               { collection: { equals: collection } },
               { kind: { equals: kind } },
+              themeClause,
               ...(operation === "update" && originalDoc?.id != null
                 ? [{ id: { not_equals: originalDoc.id } }]
                 : []),
@@ -41,7 +47,7 @@ export const Templates: CollectionConfig = withImportExportUI({
         });
         if (existing.docs.length > 0) {
           throw new Error(
-            `A ${kind} template for "${collection}" already exists — one template per collection and kind.`
+            `A ${kind} template for "${collection}" already exists in this theme — one template per collection, kind, and theme.`
           );
         }
         return data;
@@ -51,7 +57,7 @@ export const Templates: CollectionConfig = withImportExportUI({
   admin: {
     group: "Theme",
     useAsTitle: "name",
-    defaultColumns: ["name", "collection", "kind", "updatedAt"],
+    defaultColumns: ["name", "collection", "kind", "theme", "updatedAt"],
     description:
       "Layouts for a collection (Blog, Products, …). Edit visually in GrapesJS; use {{title}}, {{slug}}, {{fieldName}} placeholders — or {{{fieldName}}} to render raw HTML.",
     components: {
@@ -97,5 +103,11 @@ export const Templates: CollectionConfig = withImportExportUI({
       admin: { language: "html", description: "Template HTML with {{placeholders}}.", ...CODE_FIELD_ADMIN },
     },
     { name: "css", type: "code", admin: { language: "css", ...CODE_FIELD_ADMIN } },
+    {
+      name: "theme",
+      type: "relationship",
+      relationTo: "themes",
+      admin: { position: "sidebar", description: "Leave empty to share across all themes." },
+    },
   ],
 });

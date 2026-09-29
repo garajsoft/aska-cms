@@ -77,5 +77,11 @@ export const Menus: CollectionConfig = {
       blocks: [LinkBlock],
       admin: { description: "Top-level menu items, in display order." },
     },
+    {
+      name: "theme",
+      type: "relationship",
+      relationTo: "themes",
+      admin: { position: "sidebar", description: "Leave empty to share across all themes." },
+    },
   ],
 };
